@@ -1,4 +1,4 @@
-//    timer.c - generates timer events
+//    joystick.c - reads the joystick and calls appropraite events
 //    Copyright (C) 2007  Illinois Institute of Technology Robotics
 //	  <robotics@iit.edu>
 //
@@ -16,38 +16,50 @@
 //    with this program; if not, write to the Free Software Foundation, Inc.,
 //    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+// adc.c
 #include <pthread.h>
 #include <semaphore.h>
 #include <unistd.h>
 #include <stdio.h>
-#include "timer.h"
-#include "events.h"
+#include "robot_log.h"
 #include "robot_queue.h"
+#include "robot_comm.h"
+#include "adc.h"
+#include "events.h"
+#include "timer.h"
+#include "mod_i2c-io.h"
 
+#ifndef NOADC
 //---------------------------------------------------------------------------//
-// Private Function Prototypes
+// Function Prototypes
 //
-static void *timer_thread_main(void *arg);
+static int init_adc();
+static int close_adc();
+static void *adc_thread_main(void *arg);
 
 //---------------------------------------------------------------------------//
 // Private Globals
 //
-static pthread_t tid = -1; // Thread ID of the timer thread
+static pthread_t tid = 0; // Thread ID of the adc thread
 
 //---------------------------------------------------------------------------//
 // Public Function Implementations
 //
 
-int timer_thread_create(robot_queue *q) {
+int adc_thread_create(robot_queue *q) {
 	// create the thread
-	if(pthread_create(&tid, NULL, timer_thread_main, (void*)q) != 0) {
+	if(pthread_create(&tid, NULL, adc_thread_main, q) != 0) {
 		return 0;
 	}
 	return 1; // exit true
 
 }
 
-int timer_thread_destroy() {
+int adc_thread_destroy() {
+	if (tid <= 0) {
+		return 0;
+	}
+
 	// kill the thread
 	if (pthread_cancel(tid) != 0) {
 		return 0;
@@ -64,23 +76,31 @@ int timer_thread_destroy() {
 // Private Function Implementations
 //
 
-void *timer_thread_main(void *arg) {
-	robot_queue *q = (robot_queue*)arg;
-	robot_event ev1;
-	robot_event ev2;
-	ev1.command = ROBOT_EVENT_TIMER;
-	ev1.index = 1;
-	ev1.value = 0;
-	ev2.command = ROBOT_EVENT_TIMER;
-	ev2.index = 2;
-	ev2.value = 0;
-	int i;
-	while(1){
-		for(i = 0; i < 9; i++) {
-			robot_queue_enqueue(q, &ev1);
-		}
-		robot_queue_enqueue(q, &ev2);
-	}
-	return 0;
-}
+void *adc_thread_main(void *arg) {
+	unsigned char ADCVals[8] = [0,0,0,0,0,0,0,0];
+	unsigned char small_range; // value from 0-255 with the axis position
+	unsigned char* ADC_position[8];
+	int inval;
+	robot_queue *q = (robot_queue *)arg;
+	robot_event ev;
 
+	ev.command = ROBOT_EVENT_ADC;
+
+	//Waits the polling interval, then polls all ADC's in use
+	//Via ADC_COUNT (in adc.h) 
+	while(1) {
+		usleep(POLL_INTERVAL);	//Wait Polling Interval
+		for(int i = 0, i < ADC_COUNT, i++) {
+			inval = getADC(i);
+			inval = inval >> 2;
+			if(inval != ADCVals[i]){
+				ADCVals[i] = (unsigned char)inval;
+				ev.index = i;
+				ev.value = ADCVals[i];
+				robot_queue_enqueue(q, &ev);
+			}
+		}
+	}
+	return NULL;
+}
+#endif

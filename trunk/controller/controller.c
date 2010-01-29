@@ -135,6 +135,10 @@ int main(int argc, char *argv[])
                  if(ev.index == 2) {
                      on_1hz_timer(&ev);
                  }
+		 break;
+	    case ROBOT_EVENT_ADC:
+		 on_adc_change(ev);
+		 break;
             default:
                 break;
         }
