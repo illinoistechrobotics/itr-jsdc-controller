@@ -119,11 +119,12 @@ int main(int argc, char *argv[])
 		log_string(2, "Error running the timer thread");
 		exit(1);
 	}
-
+#ifndef NO_ADC
 	if(!adc_thread_create(&q)){
 		log_string(2, "Error running the adc thread");
 		exit(1);
 	}
+#endif
 	// Initialize the I2C and servos
 	init(0x0b);
 	servoInit();
