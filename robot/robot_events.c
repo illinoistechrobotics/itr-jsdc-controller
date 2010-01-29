@@ -108,6 +108,10 @@ void on_axis_change(robot_event *ev){
 	if(ev->index == 4) setMotor(4, ev->value);
 }
 
+void on_adc_change(robot_event *ev){
+	send_event(ev);
+}
+
 void on_motor(robot_event *ev) {
 	if(ev->index == 0) setMotor(0, ev->value);
 	if(ev->index == 1) setMotor(1, ev->value);
@@ -134,6 +138,9 @@ void on_1hz_timer(robot_event *ev){
 }
 
 void on_10hz_timer(robot_event *ev){
+}
+
+void on_50hz_timer(robot_event *ev){
 }
 
 void on_command_code(robot_event *ev) {

@@ -28,6 +28,7 @@
 #include "mod_i2c-io.h"
 #include "robot_queue.h"
 #include "profile.c"
+#include "adc.h"
 
 void term_handler(int signal);
 
@@ -118,6 +119,11 @@ int main(int argc, char *argv[])
 		log_string(2, "Error running the timer thread");
 		exit(1);
 	}
+
+	if(!adc_thread_create(&q)){
+		log_string(2, "Error running the adc thread");
+		exit(1);
+	}
 	// Initialize the I2C and servos
 	init(0x0b);
 	servoInit();
@@ -150,7 +156,7 @@ int main(int argc, char *argv[])
 				on_axis_change(&ev);
 				break;
 			case ROBOT_EVENT_MOTOR:
-				 failcount = 0;
+				failcount = 0;
 
 		/*
                 // update the state
@@ -180,6 +186,9 @@ int main(int argc, char *argv[])
 					on_button_down(&ev);
 				else
 					on_button_up(&ev);
+				break;
+			case ROBOT_EVENT_ADC:
+				failcount = 0;
 				break;
 			case ROBOT_EVENT_TIMER:
 				if(ev.index == 1){
@@ -235,3 +244,6 @@ void failsafe_mode(robot_queue *q) {
 		robot_queue_enqueue(q, &ev);
 	}
 }
+
+
+

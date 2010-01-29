@@ -13,7 +13,8 @@ LIBS = -lpthread
 BINARY = robot
 LOCAL_OBJ  = robot.o \
 			 mod_i2c-io.o \
-			 robot_events.o 
+			 robot_events.o \
+			 adc.o 
 COMMON_OBJ = robot_comm.o \
 			 robot_log.o \
 			 robot_queue.o \
