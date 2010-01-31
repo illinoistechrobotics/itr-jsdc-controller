@@ -77,20 +77,18 @@ int adc_thread_destroy() {
 //
 
 void *adc_thread_main(void *arg) {
-	unsigned char ADCVals[8] = [0,0,0,0,0,0,0,0];
-	unsigned char small_range; // value from 0-255 with the axis position
-	unsigned char* ADC_position[8];
+	unsigned char ADCVals[8] = {0,0,0,0,0,0,0,0};
 	int inval;
 	robot_queue *q = (robot_queue *)arg;
 	robot_event ev;
-
+	int i;
 	ev.command = ROBOT_EVENT_ADC;
 
 	//Waits the polling interval, then polls all ADC's in use
 	//Via ADC_COUNT (in adc.h) 
 	while(1) {
 		usleep(POLL_INTERVAL);	//Wait Polling Interval
-		for(int i = 0, i < ADC_COUNT, i++) {
+		for(i = 0; i < ADC_COUNT; i++) {
 			inval = getADC(i);
 			inval = inval >> 2;
 			if(inval != ADCVals[i]){

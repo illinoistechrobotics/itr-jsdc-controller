@@ -1,7 +1,7 @@
 # Setup the environment
-GUMSTIX_BUILDROOT ?= ../../gumstix-buildroot/
-PATH := $(PATH):$(GUMSTIX_BUILDROOT)/build_arm_nofpu/staging_dir/bin/
-ROBOSTIX_DIR ?= ../../robostix/
+TOOLCHAIN_DIR ?= ../toolchain/
+PATH := $(PATH):$(TOOLCHAIN_DIR)
+ROBOSTIX_DIR ?= ../robostix/
 I2CIO_DIR ?= $(ROBOSTIX_DIR)/gumstix/i2c-io/
 COMMON = ../common
 

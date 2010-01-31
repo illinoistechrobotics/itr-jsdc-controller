@@ -78,7 +78,7 @@ extern void on_status_code(robot_event *ev);
 extern void on_command_code(robot_event *ev);
 
 // on_adc_change is called when the remote computer sends a ADC value
-extern void on_adc_change(unsigned char code, unsigned char value);
+extern void on_adc_change(robot_event *ev);
 
 // timer that runs each second
 extern void on_1hz_timer(robot_event *ev);
