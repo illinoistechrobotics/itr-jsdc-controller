@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
                  }
 		 break;
 	    case ROBOT_EVENT_ADC:
-		 on_adc_change(ev);
+		 on_adc_change(&ev);
 		 break;
             default:
                 break;

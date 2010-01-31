@@ -1,4 +1,4 @@
-//    joystick.h - interface for joystick handling
+//    adc.h - interface for joystick handling
 //    Copyright (C) 2007  Illinois Institute of Technology Robotics
 //	  <robotics@iit.edu>
 //
@@ -25,7 +25,7 @@
 
 #define ADC_COUNT 1 //Number of ADC's to poll, cant remember if its 0 or 1 indexed
 
-#define Poll_INTERVAL 1000000/50  //50Hz polling interval
+#define POLL_INTERVAL 1000000/50  //50Hz polling interval
 
 
 extern int adc_thread_create(robot_queue *q);

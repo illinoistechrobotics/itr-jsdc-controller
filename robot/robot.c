@@ -190,6 +190,7 @@ int main(int argc, char *argv[])
 				break;
 			case ROBOT_EVENT_ADC:
 				failcount = 0;
+				on_adc_change(&ev);
 				break;
 			case ROBOT_EVENT_TIMER:
 				if(ev.index == 1){
