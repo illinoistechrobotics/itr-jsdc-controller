@@ -110,7 +110,7 @@ void on_axis_change(robot_event *ev){
 
 void on_adc_change(robot_event *ev){
 	send_event(ev);
-	log_string(-2, "ADC Value Change %02X:%02X",ev->index, ev->value);
+	log_string(0, "ADC CHANGE!!");
 }
 
 void on_motor(robot_event *ev) {
@@ -139,9 +139,6 @@ void on_1hz_timer(robot_event *ev){
 }
 
 void on_10hz_timer(robot_event *ev){
-}
-
-void on_50hz_timer(robot_event *ev){
 }
 
 void on_command_code(robot_event *ev) {
