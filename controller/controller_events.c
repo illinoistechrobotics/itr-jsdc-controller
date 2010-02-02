@@ -129,10 +129,6 @@ void on_10hz_timer(robot_event *ev) {
 	 send_event(&ev1);
 }
 
-void on_50hz_timer(robot_event *ev){
-
-}
-
 
 void on_status_code(robot_event *ev) {
 	switch(ev->command) {
@@ -157,7 +153,7 @@ void on_status_code(robot_event *ev) {
 
 
 void on_adc_change(robot_event *ev){
-	log_string(0, "ADC %02X value %02X", ev->index, ev->value);
+	log_string(-1, "ADC %02X value %02X", ev->index, ev->value);
 }
 
 void on_command_code(robot_event *ev) {

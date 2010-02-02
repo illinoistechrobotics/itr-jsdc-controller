@@ -1,14 +1,15 @@
 # Setup the environment
-TOOLCHAIN_DIR ?= ../toolchain/bin
-PATH := $(PATH):$(TOOLCHAIN_DIR)
+BUILDROOT_DIR ?= ../toolchain
+PATH := $(BUILDROOT_DIR)/build_arm_nofpu/staging_dir/arm-linux/bin/:$(BUILDROOT_DIR)/build_arm_nofpu/staging_dir/bin/$(PATH)
 ROBOSTIX_DIR ?= ../robostix/
 I2CIO_DIR ?= $(ROBOSTIX_DIR)/gumstix/i2c-io/
 COMMON = ../common
 
 # Turn on all warnings
 OPTS = -Wall -g -march=armv5te -mtune=xscale
-CC = arm-linux-gcc
-LIBS = -lpthread
+CC = gcc
+LIBS = -lpthread -lc
+LD = ld
 
 BINARY = robot
 LOCAL_OBJ  = robot.o \
@@ -35,7 +36,8 @@ INCLUDES = -I. \
 		   -I$(ROBOSTIX_DIR)/Shared \
 		   -I$(ROBOSTIX_DIR)/Common \
 		   -I$(ROBOSTIX_DIR)/gumstix/i2c-io \
-		   -L../lib
+		   -L$(BUILDROOT_DIR)/build_arm_nofpu/staging_dir/lib/
+
 
 	   
 
@@ -51,7 +53,7 @@ SRC = $(LOCAL_SRC) $(COMMON_SRC)
 all: $(BINARY)
 
 $(BINARY): $(OBJ)
-	$(CC) $(CFLAGS) $(LIBS) $(OBJ) -o $(BINARY)
+	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) $(OBJ) -o $(BINARY)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@

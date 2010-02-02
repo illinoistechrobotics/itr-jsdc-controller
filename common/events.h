@@ -85,5 +85,4 @@ extern void on_1hz_timer(robot_event *ev);
 
 extern void on_10hz_timer(robot_event *ev);
 
-extern void on_50hz_timer(robot_event *ev);
 #endif // !EVENTS_H
