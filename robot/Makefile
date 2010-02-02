@@ -1,5 +1,5 @@
 # Setup the environment
-TOOLCHAIN_DIR ?= ../toolchain/
+TOOLCHAIN_DIR ?= ../toolchain/bin
 PATH := $(PATH):$(TOOLCHAIN_DIR)
 ROBOSTIX_DIR ?= ../robostix/
 I2CIO_DIR ?= $(ROBOSTIX_DIR)/gumstix/i2c-io/
@@ -34,7 +34,9 @@ INCLUDES = -I. \
 		   -I$(ROBOSTIX_DIR)/gumstix/Common \
 		   -I$(ROBOSTIX_DIR)/Shared \
 		   -I$(ROBOSTIX_DIR)/Common \
-		   -I$(ROBOSTIX_DIR)/gumstix/i2c-io
+		   -I$(ROBOSTIX_DIR)/gumstix/i2c-io \
+		   -L../lib
+
 	   
 
 # Begin derived variablse
