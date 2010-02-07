@@ -1,13 +1,13 @@
 # Setup the environment
-BUILDROOT_DIR ?= ../toolchain
-PATH := $(BUILDROOT_DIR)/build_arm_nofpu/staging_dir/arm-linux/bin/:$(BUILDROOT_DIR)/build_arm_nofpu/staging_dir/libexec/gcc/arm-linux-uclibcgnueabi/4.1.1/:$(BUILDROOT_DIR)/build_arm_nofpu/staging_dir/bin/$(PATH)
+BUILDROOT_DIR ?= /opt/gumstix-buildroot
+PATH := $(BUILDROOT_DIR)/build_arm_nofpu/staging_dir/bin/:$(PATH)
 ROBOSTIX_DIR ?= ../robostix/
 I2CIO_DIR ?= $(ROBOSTIX_DIR)/gumstix/i2c-io/
 COMMON = ../common
 
 # Turn on all warnings
 OPTS = -Wall -g -march=armv5te -mtune=xscale
-CC = gcc
+CC = arm-linux-gcc
 LIBS = -lpthread -lc
 
 BINARY = robot

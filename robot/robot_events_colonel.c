@@ -39,6 +39,7 @@
 
 int flasher = 0;
 
+unsigned char des_steer[2] = {127, 127};
 void on_init() {
 	robot_event ev;
 	ev.command = ROBOT_EVENT_CMD_START;
@@ -109,8 +110,13 @@ void on_axis_change(robot_event *ev){
 }
 
 void on_adc_change(robot_event *ev){
-	send_event(ev);
-	log_string(0, "ADC CHANGE!!");
+	
+	if(ev->index == 0){
+		if(ev->value < des_steer[0])
+			setMotor(0, 127 + (des_steer[0] - ev->value));
+		else
+			setMotor(0, 127 - (ev->value - des_steer[0]));
+	}
 }
 
 void on_motor(robot_event *ev) {
