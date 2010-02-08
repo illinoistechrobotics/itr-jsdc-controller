@@ -55,7 +55,7 @@ OBJ_FENRIR = $(LOCAL_OBJ) $(LOCAL_OBJ_FENRIR) $(COMMON_OBJ) $(I2CIO_OBJ)
 SRC = $(LOCAL_SRC) $(COMMON_SRC)
 
 .PHONY: all
-all: $(BINARY)
+all: $(BINARY)-roslund
 
 $(BINARY)-roslund: $(OBJ_ROSLUND)
 	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) $(OBJ_ROSLUND) -o $(BINARY)
@@ -77,7 +77,7 @@ $(BINARY)-roslund: $(OBJ_ROSLUND)
 
 .PHONY: clean
 clean:
-	-rm -f $(OBJ) $(BINARY)
+	-rm -f $(OBJ_ROSLUND) $(OBJ_COLONEL) $(OBJ_FENRIR) $(BINARY)-*
 
 .PHONY: roslund
 roslund: $(BINARY)-roslund

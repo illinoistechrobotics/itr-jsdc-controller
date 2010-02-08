@@ -72,11 +72,9 @@ void on_button_up(robot_event *ev) {
 
 	if(ev->index == CON_MP3_PLAY) {
 		setPin(2,7,0);
-		printf("PLAY unclicked\n");
 	}
 	if(ev->index == CON_MP3_NEXT) {
 		setPin(2,5,0);
-		printf("NEXT unclicked\n");
 	}
 	if(ev->index == CON_MP3_PREV) {
 	}
@@ -110,20 +108,33 @@ void on_axis_change(robot_event *ev){
 }
 
 void on_adc_change(robot_event *ev){
-	
+	int diff;
 	if(ev->index == 0){
-		if(ev->value < des_steer[0])
-			setMotor(0, 127 + (des_steer[0] - ev->value));
-		else
-			setMotor(0, 127 - (ev->value - des_steer[0]));
+		diff = (int)des_steer[0] - (int)(ev->value);
+		diff >>= 1;
+		if(diff <= 10 && diff > 0) {
+			if(diff > 5)
+				diff = 10;
+			else
+				diff = 0;
+		}
+		if(diff >= -10 && diff < 0) {
+			if(diff < -5)
+				diff = -10;
+			else
+				diff = 0;
+		}
+		setMotor(0, (unsigned char)(127 + diff));
+		 //Shift is for divide by 2, but shift is faster on ARM
+		 //Position and desired may be different by 255, Divide by 2.
 	}
 }
 
-void on_motor(robot_event *ev) {
-	if(ev->index == 0) setMotor(0, ev->value);
-	if(ev->index == 1) setMotor(1, ev->value);
-	if(ev->index == 2) setMotor(2, ev->value);
-	if(ev->index == 3) setMotor(3, ev->value);
+void on_motor(robot_event *ev){ 
+	if(ev->index >= 0 && ev->index <= 3)
+		setMotor(ev->index, ev->value);	
+	if(ev->index == 6 || ev->index == 7)
+		des_steer[ev->index - 6] = ev-> value;
 }
 
 void on_status_code(robot_event *ev) {
