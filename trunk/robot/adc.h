@@ -25,7 +25,7 @@
 
 #define ADC_COUNT 1 //Number of ADC's to poll, cant remember if its 0 or 1 indexed
 
-#define POLL_INTERVAL 1000000/1  //50Hz polling interval
+#define POLL_INTERVAL 1000000/50  //50Hz polling interval
 
 
 extern int adc_thread_create(robot_queue *q);
