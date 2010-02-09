@@ -77,25 +77,10 @@ $(BINARY)-roslund: $(OBJ_ROSLUND)
 
 .PHONY: clean
 clean:
-	-rm -f $(OBJ_ROSLUND) $(OBJ_COLONEL) $(OBJ_FENRIR) $(BINARY)-*
+	-rm -f $(OBJ_ROSLUND) $(OBJ_COLONEL) $(OBJ_FENRIR) $(BINARY) $(BINARY)-roslund $(BINARY)-colonel $(BINARY)-fenrir
 
 .PHONY: roslund
 roslund: $(BINARY)-roslund
-
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
-%.o: $(COMMON)/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-%.o: $(ROBOSTIX_DIR)/gumstix/Shared/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-%.o: $(ROBOSTIX_DIR)/gumstix/Common/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-%.o: $(ROBOSTIX_DIR)/Shared/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-%.o: $(ROBOSTIX_DIR)/Common/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-%.o: $(ROBOSTIX_DIR)/gumstix/i2c-io/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: colonel
 colonel: $(BINARY)-colonel
@@ -103,38 +88,8 @@ colonel: $(BINARY)-colonel
 $(BINARY)-colonel: $(OBJ_COLONEL)
 	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) $(OBJ_COLONEL) -o $(BINARY)-colonel
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
-%.o: $(COMMON)/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-%.o: $(ROBOSTIX_DIR)/gumstix/Shared/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-%.o: $(ROBOSTIX_DIR)/gumstix/Common/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-%.o: $(ROBOSTIX_DIR)/Shared/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-%.o: $(ROBOSTIX_DIR)/Common/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-%.o: $(ROBOSTIX_DIR)/gumstix/i2c-io/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
 .PHONY: fenrir
 fenrir: $(BINARY)-fenrir
 
 $(BINARY)-fenrir: $(OBJ_FENRIR)
 	$(CC) $(CFLAGS) $(INCLUDES) $(LIBS) $(OBJ_FENRIR) -o $(BINARY)-fenrir
-
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
-%.o: $(COMMON)/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-%.o: $(ROBOSTIX_DIR)/gumstix/Shared/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-%.o: $(ROBOSTIX_DIR)/gumstix/Common/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-%.o: $(ROBOSTIX_DIR)/Shared/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-%.o: $(ROBOSTIX_DIR)/Common/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-%.o: $(ROBOSTIX_DIR)/gumstix/i2c-io/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
