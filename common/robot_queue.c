@@ -39,7 +39,6 @@
 
 static int inc_tail_index(robot_queue *q);
 static int inc_head_index(robot_queue *q);
-static int axis_hack(robot_queue *q, const robot_event *const ev);
 static int lock (robot_queue *q);
 static int unlock (robot_queue *q);
 
@@ -48,94 +47,107 @@ void robot_queue_create(robot_queue *q) {
 	q->head_index = 0;
 	q->tail_index = 0;
 	q->length = 0;
-    sem_init(&(q->lock), 0, 1);
+	sem_init(&(q->lock), 0, 1);
 }
 
 // robot_queue_destroy -- frees resources created associated with a queue
 void robot_queue_destroy(robot_queue *q) {
-    sigset_t   signal_mask;  /* signals to block         */
+	sigset_t   signal_mask;  /* signals to block         */
 
-    // List of signals to block
-    sigemptyset (&signal_mask);
-    sigaddset (&signal_mask, SIGINT);
-    sigaddset (&signal_mask, SIGTERM);
-    sigaddset (&signal_mask, SIGHUP);
+	// List of signals to block
+	sigemptyset (&signal_mask);
+	sigaddset (&signal_mask, SIGINT);
+	sigaddset (&signal_mask, SIGTERM);
+	sigaddset (&signal_mask, SIGHUP);
 
-    if (lock(q)) {
-        sem_destroy(&(q->lock));
-        // unblock signals
-        pthread_sigmask(SIG_UNBLOCK, &signal_mask, NULL);
-    }
-    // don't post, the semaphore has been destroyed.
+	if (lock(q)) {
+		sem_destroy(&(q->lock));
+		// unblock signals
+		pthread_sigmask(SIG_UNBLOCK, &signal_mask, NULL);
+	}
+	// don't post, the semaphore has been destroyed.
 }
 
 static int lock (robot_queue *q) {
-    sigset_t   signal_mask;  /* signals to block         */
+	sigset_t   signal_mask;  /* signals to block         */
 
-    // List of signals to block
-    sigemptyset (&signal_mask);
-    sigaddset (&signal_mask, SIGINT);
-    sigaddset (&signal_mask, SIGTERM);
-    sigaddset (&signal_mask, SIGHUP);
-    // Block signals and lock the queue
-    if (pthread_sigmask(SIG_BLOCK, &signal_mask, NULL) == 0) { 
-        return !(sem_wait(&(q->lock)));
-    } else {
-        return 0;
-    }
+	// List of signals to block
+	sigemptyset (&signal_mask);
+	sigaddset (&signal_mask, SIGINT);
+	sigaddset (&signal_mask, SIGTERM);
+	sigaddset (&signal_mask, SIGHUP);
+	// Block signals and lock the queue
+	if (pthread_sigmask(SIG_BLOCK, &signal_mask, NULL) == 0) { 
+		return !(sem_wait(&(q->lock)));
+	} else {
+		return 0;
+	}
 }
 
 static int unlock (robot_queue *q) {
-    sigset_t   signal_mask;  /* signals to block         */
+	sigset_t   signal_mask;  /* signals to block         */
 
-    // List of signals to block
-    sigemptyset (&signal_mask);
-    sigaddset (&signal_mask, SIGINT);
-    sigaddset (&signal_mask, SIGTERM);
-    sigaddset (&signal_mask, SIGHUP);
+	// List of signals to block
+	sigemptyset (&signal_mask);
+	sigaddset (&signal_mask, SIGINT);
+	sigaddset (&signal_mask, SIGTERM);
+	sigaddset (&signal_mask, SIGHUP);
 
-    // Unlock the queue and unblock signals
-    if (sem_post(&(q->lock)) == 0) {
-        return !pthread_sigmask(SIG_UNBLOCK, &signal_mask, NULL);
-    } else {
-        return 0;
-    }
+	// Unlock the queue and unblock signals
+	if (sem_post(&(q->lock)) == 0) {
+		return !pthread_sigmask(SIG_UNBLOCK, &signal_mask, NULL);
+	} else {
+		return 0;
+	}
 }
 
 // robot_queue_enqueue - adds an event to the back of the queue
 int robot_queue_enqueue(robot_queue *q, const robot_event *const ev) {
-	int tail_index;
-    if (lock(q)) {
-        tail_index = q->tail_index;
-        memcpy(q->array + tail_index, ev, sizeof(q->array[tail_index])); // copy
+	int tail_index, head_index, i;
+	if (lock(q)) {
+		head_index = q->head_index;
+		tail_index = q->tail_index;
+		i = head_index;
+		if(ev->command == ROBOT_EVENT_MOTOR || ev->command == ROBOT_EVENT_JOY_AXIS){
+			while(i != tail_index){
+				if(q->array[i].command == ev->command && q->array[i].index == ev->index){
+					q->array[i].value = ev->value;
+					return 1;
+				}
+				++i;
+				while(i >= QUEUE_SIZE)
+					i -= QUEUE_SIZE;	 
+			}
+		}
+		memcpy(q->array + tail_index, ev, sizeof(q->array[tail_index])); // copy
 
-        inc_tail_index(q);
-        unlock(q);
-        return 1;
-    } else {
-        return 0;
-    }
+		inc_tail_index(q);
+		unlock(q);
+		return 1;
+	} else {
+		return 0;
+	}
 }
 
 // robot_queue_dequeue - removes an event from the front of the queue
 // 	this function populates the variable ev with the item removed
 int robot_queue_dequeue(robot_queue *q, robot_event *ev) {
 	int head_index;
-    int ret = 0;
+	int ret = 0;
 
-    if (lock(q)) {
-        head_index = q->head_index;
+	if (lock(q)) {
+		head_index = q->head_index;
 
-        if(q->length > 0) {
-            memcpy(ev, q->array + head_index, sizeof(q->array[head_index])); //copy
-            inc_head_index(q); // remove the head event of the queue
-            ret = 1;
-        }
-        if (unlock(q)) return ret;
-        else return 0;
-    } else {
-        return 0;
-    }
+		if(q->length > 0) {
+			memcpy(ev, q->array + head_index, sizeof(q->array[head_index])); //copy
+			inc_head_index(q); // remove the head event of the queue
+			ret = 1;
+		}
+		if (unlock(q)) return ret;
+		else return 0;
+	} else {
+		return 0;
+	}
 
 }
 // alias to robot_queue_dequeue
@@ -154,14 +166,14 @@ int robot_queue_wait_event(robot_queue *q, robot_event *ev) {
 
 // shows the size of the queue
 int robot_queue_get_length(robot_queue *const q) {
-    int len;
-    if (lock(q)) {
-        len = q->length;
-        if (unlock(q)) return len;
-        else return -1;
-    } else {
-        return -1;
-    }
+	int len;
+	if (lock(q)) {
+		len = q->length;
+		if (unlock(q)) return len;
+		else return -1;
+	} else {
+		return -1;
+	}
 }
 
 // inc_tail_index opens up a spot for an event to be added
@@ -194,9 +206,4 @@ int inc_head_index(robot_queue *q) {
 	}
 
 	return q->head_index;
-}
-
-static int axis_hack(robot_queue *q, const robot_event *const ev) {
-
-	return -1;
 }
