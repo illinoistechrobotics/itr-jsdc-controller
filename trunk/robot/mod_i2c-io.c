@@ -256,6 +256,8 @@ void servoInit(){
 void setMotor(int motor, int position){ 
    if( motor <= 5  && motor >= 0) { 				//Check and make sure the motor is one we know about
       int motor_regs[] = {0x82, 0x84, 0x86, 0x4A, 0x48, 0x78}; 	//Register map, corrolates to output 3A, 3B, 3C, 1A, 1B, 1C
+	  if(position > 255) position = 255;
+	  if(position < 0) position = 0;
 	uint16_t regVal16 = (((position*8u)+500)*2); 		//Equation to convert 0-255 to 500-2500 (from gumstix wiki)
 	I2C_IO_WriteReg16( i2cDev, motor_regs[motor], regVal16 ); //Send register write command for the correct motor register
    }

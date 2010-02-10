@@ -77,7 +77,7 @@ int adc_thread_destroy() {
 //
 
 void *adc_thread_main(void *arg) {
-	unsigned char ADCVals[8] = {0,0,0,0,0,0,0,0};
+	unsigned char ADCVals[8] = {127,127,127,127,127,127,127,127};
 	int inval;
 	robot_queue *q = (robot_queue *)arg;
 	robot_event ev;

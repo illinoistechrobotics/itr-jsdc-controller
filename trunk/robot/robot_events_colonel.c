@@ -40,6 +40,8 @@
 int flasher = 0;
 
 unsigned char des_steer[2] = {127, 127};
+unsigned char pos[2] = {127, 127};
+
 void on_init() {
 	robot_event ev;
 	ev.command = ROBOT_EVENT_CMD_START;
@@ -107,11 +109,11 @@ void on_axis_change(robot_event *ev){
 	if(ev->index == 4) setMotor(4, ev->value);
 }
 
-void on_adc_change(robot_event *ev){
+void update_steer(){
 	int diff;
-	if(ev->index == 0){
-		diff = (int)des_steer[0] - (int)(ev->value);
-		diff >>= 1;
+	int i;
+	for(i = 0; i < 2; i++){
+		diff = -((int)des_steer[i] - (int)(pos[i]));
 		if(diff <= 10 && diff > 0) {
 			if(diff > 5)
 				diff = 10;
@@ -124,17 +126,24 @@ void on_adc_change(robot_event *ev){
 			else
 				diff = 0;
 		}
-		setMotor(0, (unsigned char)(127 + diff));
-		 //Shift is for divide by 2, but shift is faster on ARM
-		 //Position and desired may be different by 255, Divide by 2.
+		setMotor(i+4, 127 + diff);
+	}
+}
+
+void on_adc_change(robot_event *ev){
+	if(ev->index == 0 || ev->index == 1){
+		pos[ev->index] = ev->value;
+		update_steer();
 	}
 }
 
 void on_motor(robot_event *ev){ 
-	if(ev->index >= 0 && ev->index <= 3)
+	if(ev->index <= 3)
 		setMotor(ev->index, ev->value);	
-	if(ev->index == 6 || ev->index == 7)
-		des_steer[ev->index - 6] = ev-> value;
+	if(ev->index == 4 || ev->index == 5){
+		des_steer[ev->index - 4] = ev-> value;
+		update_steer();
+	}
 }
 
 void on_status_code(robot_event *ev) {

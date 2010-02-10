@@ -109,14 +109,18 @@ int robot_queue_enqueue(robot_queue *q, const robot_event *const ev) {
 		tail_index = q->tail_index;
 		i = head_index;
 		if(ev->command == ROBOT_EVENT_MOTOR || ev->command == ROBOT_EVENT_JOY_AXIS){
-			while(i != tail_index){
-				if(q->array[i].command == ev->command && q->array[i].index == ev->index){
-					q->array[i].value = ev->value;
-					return 1;
+			if(q->length){
+				while(i != tail_index){
+					if(q->array[i].command == ev->command && q->array[i].index == ev->index){
+						q->array[i].value = ev->value;
+						unlock(q);
+						return 1;
+					}
+					i++;
+					while(i >= QUEUE_SIZE){
+						i -= QUEUE_SIZE;
+					}
 				}
-				++i;
-				while(i >= QUEUE_SIZE)
-					i -= QUEUE_SIZE;	 
 			}
 		}
 		memcpy(q->array + tail_index, ev, sizeof(q->array[tail_index])); // copy

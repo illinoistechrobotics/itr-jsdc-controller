@@ -98,11 +98,11 @@ void on_axis_change(robot_event *ev) {
 		mot2 = (mot2*2)/(4 - turbo);
 		mot3 = (mot3*2)/(4 - turbo);
 		mot4 = (mot4*2)/(4 - turbo);
-		
+				
 		
 		// send four axes out
         new_ev.command = ROBOT_EVENT_MOTOR;
-        new_ev.index = 0; new_ev.value = mot1 + 127;
+     /*   new_ev.index = 0; new_ev.value = mot1 + 127;
 		send_event(&new_ev);
 
         new_ev.index = 1; new_ev.value = mot2 + 127;
@@ -112,8 +112,12 @@ void on_axis_change(robot_event *ev) {
 		send_event(&new_ev);
 
         new_ev.index = 3; new_ev.value = mot4 + 127;
+		send_event(&new_ev); */
+	if(ev->index == 1){	
+		new_ev.index = 4; new_ev.value = ev->value;
 		send_event(&new_ev);
 	}
+	 }
 }
 
 void on_1hz_timer(robot_event *ev) {
