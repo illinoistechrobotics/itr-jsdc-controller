@@ -117,6 +117,10 @@ void on_axis_change(robot_event *ev) {
 		new_ev.index = 4; new_ev.value = ev->value;
 		send_event(&new_ev);
 	}
+	if(ev->index == 2){
+		new_ev.index = 5; new_ev.value = ev->value;
+		send_event(&new_ev);
+	}
 	 }
 }
 
