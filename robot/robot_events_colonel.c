@@ -134,6 +134,7 @@ void on_adc_change(robot_event *ev){
 	if(ev->index == 0 || ev->index == 1){
 		pos[ev->index] = ev->value;
 		update_steer();
+		printf("ADC INDEX: %02X ADC VALUE: %02X", ev->index, ev->value);
 	}
 }
 
