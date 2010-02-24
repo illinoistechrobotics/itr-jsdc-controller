@@ -115,13 +115,13 @@ void update_steer(){
 	for(i = 0; i < 2; i++){
 		diff = -((int)des_steer[i] - (int)(pos[i]));
 		if(diff <= 10 && diff > 0) {
-			if(diff > 5)
+			if(diff > 2)
 				diff = 10;
 			else
 				diff = 0;
 		}
 		if(diff >= -10 && diff < 0) {
-			if(diff < -5)
+			if(diff < -2)
 				diff = -10;
 			else
 				diff = 0;
@@ -132,9 +132,13 @@ void update_steer(){
 
 void on_adc_change(robot_event *ev){
 	if(ev->index == 0 || ev->index == 1){
-		pos[ev->index] = ev->value;
+		if(ev->index == 0)
+			pos[0] = (char)(((float)ev->value)/255*205+31);
+			//Equation from calculations on robot, trust me, its right.
+		if(ev->index == 1)
+			pos[1] = 255 - (char)(((float)ev->value)/255*204+38);
+			//Same as above, again, will have to trust me. --Zack
 		update_steer();
-		printf("ADC INDEX: %02X ADC VALUE: %02X", ev->index, ev->value);
 	}
 }
 
@@ -142,7 +146,7 @@ void on_motor(robot_event *ev){
 	if(ev->index <= 3)
 		setMotor(ev->index, ev->value);	
 	if(ev->index == 4 || ev->index == 5){
-		des_steer[ev->index - 4] = ev-> value;
+		des_steer[ev->index - 4] = ev->value;
 		update_steer();
 	}
 }
