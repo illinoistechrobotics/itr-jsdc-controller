@@ -30,4 +30,6 @@ extern void setMotorDR(int motor, int position, int percent); //Servo control us
 extern uint16_t getADC(uint8_t pin); //Get ADC value, returned as a 16 bit unsigned integer
 extern void setPin(uint8_t port, uint8_t pin, uint8_t value); //Set pin (faster)
 extern void setDir(uint8_t port, uint8_t pin, uint8_t value); //SetDir (faster) (0=off)
+extern unsigned short readEnc(int encNumber);
+
 #endif // !MOD_I2C_IO_H
