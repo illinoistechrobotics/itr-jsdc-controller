@@ -106,38 +106,64 @@ void on_button_down(robot_event *ev) {
 }
 
 void on_axis_change(robot_event *ev){
-	if(ev->index == 4) setMotor(4, ev->value);
 }
 
 void update_steer(){
-	int diff;
+	signed int diff;
 	int i;
 	for(i = 0; i < 2; i++){
 		diff = -((int)des_steer[i] - (int)(pos[i]));
 		if(diff <= 10 && diff > 0) {
-			if(diff > 2)
+			if(diff > 5)
 				diff = 10;
+			else if (diff > 3)
+				diff = 5;
 			else
 				diff = 0;
 		}
 		if(diff >= -10 && diff < 0) {
-			if(diff < -2)
+			if(diff < -5)
 				diff = -10;
+			else if (diff < -3)
+				diff = -5;
 			else
 				diff = 0;
 		}
-		setMotor(i+4, 127 + diff);
+		if(abs(diff) > 127){
+			if(diff > 0)
+				diff = 127;
+			else
+				diff = -127;
+		}
+		setMotor(i+4, 127 + (diff>>i));
 	}
 }
 
 void on_adc_change(robot_event *ev){
+	int temp;
 	if(ev->index == 0 || ev->index == 1){
-		if(ev->index == 0)
-			pos[0] = (char)(((float)ev->value)/255*205+31);
-			//Equation from calculations on robot, trust me, its right.
-		if(ev->index == 1)
-			pos[1] = 255 - (char)(((float)ev->value)/255*204+38);
-			//Same as above, again, will have to trust me. --Zack
+		if(ev->index == 0){
+			temp =  (int)ev->value - 0x7F; //Center adustment
+			if(temp < 0)
+				temp *= 127./75.;		   //Left adjustment
+			if(temp > 0)
+				temp *= 127./75.;		   //Right Adjustment
+			temp = temp + 127;			   //Correct back to 127 center
+			pos[0] = (char)temp;
+		}
+		if(ev->index == 1){
+			temp =  -((int)ev->value - 0x7F); //Center adustment
+			if(temp < 0)
+				temp *= 127./102.;		   //Left adjustment
+			if(temp > 0)
+				temp *= 127./102.;		   //Right Adjustment
+			temp = temp + 127;			   //Correct back to 127 center
+			if(temp < 0)
+				temp = 0;
+			if(temp > 255)
+				temp = 255;
+			pos[1] = (char)temp;
+		}
 		update_steer();
 	}
 }

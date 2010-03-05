@@ -109,6 +109,10 @@ int main(int argc, char *argv[])
 
 	robot_queue_create(&q);
 
+	// Initialize the I2C and servos
+	init(0x0b);
+	servoInit();
+
 	// Open up the socket
 	if(!net_thread_server_create(&q, server_port)) {
 		log_string(2, "Error running the network thread");
@@ -125,9 +129,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 #endif
-	// Initialize the I2C and servos
-	init(0x0b);
-	servoInit();
+
 
 	// init event
 	on_init();

@@ -71,11 +71,9 @@ void on_button_up(robot_event *ev) {
 
 	if(ev->index == CON_MP3_PLAY) {
 		setPin(2,7,0);
-		printf("PLAY unclicked\n");
 	}
 	if(ev->index == CON_MP3_NEXT) {
 		setPin(2,5,0);
-		printf("NEXT unclicked\n");
 	}
 	if(ev->index == CON_MP3_PREV) {
 	}
@@ -110,7 +108,6 @@ void on_axis_change(robot_event *ev){
 
 void on_adc_change(robot_event *ev){
 	send_event(ev);
-	log_string(0, "ADC CHANGE!!");
 }
 
 void on_motor(robot_event *ev) {
