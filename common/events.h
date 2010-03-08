@@ -22,7 +22,7 @@
 typedef struct {
 	unsigned char command; // command 
 	unsigned char index; // eg the axis number or button number
-	unsigned char value; // eg the axis value or button value
+	unsigned short value; // eg the axis value or button value
 } robot_event;
 
 enum {

@@ -32,6 +32,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <sys/timeb.h>
+#include <semaphore.h>
 
 #include "AvrInfo.h"
 #include "i2c-dev.h"
@@ -171,7 +172,7 @@ enum
 
 
 static int i2cDev = -1;
-
+static sem_t *i2clock;
 
 // ---- Private Function Prototypes -----------------------------------------
 
@@ -185,12 +186,15 @@ const char         *i2cDevName = "/dev/i2c-0";
  */
 
 	void init(int i2cslave){
+		sem_init(i2clock,0,1);
+		sem_wait(i2clock);
 		if (( i2cDev = open( i2cDevName, O_RDWR )) < 0 )
 		{
 			LogError( "Error  opening '%s': %s\n", i2cDevName, strerror( errno ));
 			exit( 1 );
 		}
 		I2cSetSlaveAddress( i2cDev, 0x0b, I2C_USE_CRC );
+		sem_post(i2clock);
 	}
 // End Init
 
@@ -259,7 +263,9 @@ void setMotor(int motor, int position){
 		if(position > 255) position = 255;
 		if(position < 0) position = 0;
 		uint16_t regVal16 = (((position*8u)+500)*2); 		//Equation to convert 0-255 to 500-2500 (from gumstix wiki)
+		sem_wait(i2clock);
 		I2C_IO_WriteReg16( i2cDev, motor_regs[motor], regVal16 ); //Send register write command for the correct motor register
+		sem_post(i2clock);
 	}
 }
 
@@ -281,7 +287,9 @@ void setServo(int servo, int position){
 void setMotorPWM(int motor, int msLength){
 	if( motor <= 5  && motor >= 0) {                             //Check and make sure the motor is one we know about
 		int motor_regs[] = { OCR3A , OCR3B , OCR3C , OCR1A , OCR1B , OCR1C };  //Register map
+		sem_wait(i2clock);
 		I2C_IO_WriteReg16( i2cDev, motor_regs[motor], msLength * 2 ); //Send register write command for the correct motor register, multiply times 2 to allow the correct value
+		sem_post(i2clock);
 	}
 }
 
@@ -301,6 +309,7 @@ void setServoPWM(int motor, int msLength){
 
 int getPin(uint8_t portNum, uint8_t pin){
 	uint8_t pinVal;
+	sem_wait(i2clock);
 	if ( I2C_IO_GetGPIO( i2cDev, portNum, &pinVal ))
 	{
 		return (( pinVal & ( 1 << pin )) != 0 );
@@ -311,10 +320,12 @@ int getPin(uint8_t portNum, uint8_t pin){
 				portNum + 'A', pin );
 		return 0;
 	}
+	sem_post(i2clock);
 }
 
 int getDir(uint8_t portNum, uint8_t pin){
 	uint8_t pinVal;
+	sem_wait(i2clock);
 	if ( I2C_IO_GetGPIODir( i2cDev, portNum, &pinVal ))
 	{
 		return ((( pinVal & ( 1 << pin )) != 0 ) ? 1 : 0 );
@@ -324,6 +335,7 @@ int getDir(uint8_t portNum, uint8_t pin){
 		LogError( "Failed to retrieve direction for %s.%d\n",
 				portNum + 'A', pin );
 	}
+	sem_post(i2clock);
 	return 0;
 }
 
@@ -337,10 +349,12 @@ int getDir(uint8_t portNum, uint8_t pin){
 
 uint16_t getADC(uint8_t pin){
 	uint16_t    adcVal;
+	sem_wait(i2clock);
 	if ( I2C_IO_GetADC( i2cDev, pin, &adcVal ))
 	{
 		return adcVal;
 	}
+	sem_post(i2clock);
 	return 0;
 }
 
@@ -354,7 +368,9 @@ void setPin(uint8_t portNum, uint8_t pin, uint8_t value){
 			pinVal = 0;
 		else
 			pinVal = pinMask;
+		sem_wait(i2clock);
 		I2C_IO_SetGPIO( i2cDev, portNum, pinMask, pinVal );
+		sem_post(i2clock);
 	}
 }
 
@@ -367,7 +383,9 @@ void setDir(uint8_t portNum, uint8_t pin, uint8_t value){
 			pinVal = pinMask;
 		if(value == 0)
 			pinVal = 0;
+		sem_wait(i2clock);
 		I2C_IO_SetGPIODir( i2cDev, portNum, pinMask, pinVal );
+		sem_post(i2clock);
 	}
 }
 
@@ -375,25 +393,33 @@ void writeReg(int RegNum, int data){
 	if((RegNum >> 8) == 1){ //If is16Bit is true
 		uint16_t regVal16 = data; //create 16 bit unsigned it from data
 		RegNum = RegNum & ~0x100; //Remove is16Bit bit from regNum
+		sem_wait(i2clock);
 		I2C_IO_WriteReg16( i2cDev, RegNum, regVal16 ); //Write Register
+		sem_post(i2clock);
 	}
 	if((RegNum >> 8) == 0){ //If is16Bit is false
 		uint8_t regVal8 = data; //Create 8 bit unsigned int from data
+		sem_wait(i2clock);
 		I2C_IO_WriteReg8( i2cDev, RegNum, regVal8 );//Write Register
+		sem_post(i2clock);
 	}
 }
 
 unsigned short readEnc(int encNumber){
+	unsigned char addr = 0;
 	switch (encNumber){
 		case 0:
-			I2cSetSlaveAddress( i2cDev, 0x3E, 0 );
+			addr = 0x3E;
 			break;
 		default:
 			return 0;
 	}
 	short temp = 0;
+	sem_wait(i2clock);
+	I2cSetSlaveAddress( i2cDev, 0x3E, 0 );
 	I2cReadBytes( i2cDev, 10, &temp, 2);
 	I2cSetSlaveAddress( i2cDev, 0x0b, I2C_USE_CRC );
+	sem_post(i2clock);
 	return temp;
 }
 	
