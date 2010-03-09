@@ -149,7 +149,7 @@ void on_command_code(robot_event *ev) {
 			break;
 		case ROBOT_EVENT_CMD_STOP:
 			setPin(6,3,1);
-			setPin(2,4,1);
+			setPin(1,4,1);
 
 			break;
 		case ROBOT_EVENT_CMD_REBOOT:

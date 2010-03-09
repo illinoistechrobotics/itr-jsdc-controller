@@ -180,35 +180,35 @@ static void writeReg(int RevNum, int data);
 const char         *i2cDevName = "/dev/i2c-0";
 
 static int lock () {
-        sigset_t   signal_mask;  /* signals to block         */
+	sigset_t   signal_mask;  /* signals to block         */
 
-        // List of signals to block
-        sigemptyset (&signal_mask);
-        sigaddset (&signal_mask, SIGINT);
-        sigaddset (&signal_mask, SIGTERM);
-        sigaddset (&signal_mask, SIGHUP);
-        // Block signals and lock the queue
-        if (pthread_sigmask(SIG_BLOCK, &signal_mask, NULL) == 0) {
-                return !(sem_wait(&i2clock));
-        } else {
-                return 0;
-        }
+	// List of signals to block
+	sigemptyset (&signal_mask);
+	sigaddset (&signal_mask, SIGINT);
+	sigaddset (&signal_mask, SIGTERM);
+	sigaddset (&signal_mask, SIGHUP);
+	// Block signals and lock the queue
+	if (pthread_sigmask(SIG_BLOCK, &signal_mask, NULL) == 0) {
+		return !(sem_wait(&i2clock));
+	} else {
+		return 0;
+	}
 }
 static int unlock () {
-        sigset_t   signal_mask;  /* signals to block         */
+	sigset_t   signal_mask;  /* signals to block         */
 
-        // List of signals to block
-        sigemptyset (&signal_mask);
-        sigaddset (&signal_mask, SIGINT);
-        sigaddset (&signal_mask, SIGTERM);
-        sigaddset (&signal_mask, SIGHUP);
+	// List of signals to block
+	sigemptyset (&signal_mask);
+	sigaddset (&signal_mask, SIGINT);
+	sigaddset (&signal_mask, SIGTERM);
+	sigaddset (&signal_mask, SIGHUP);
 
-        // Unlock the queue and unblock signals
-        if (sem_post(&i2clock) == 0) {
-                return !pthread_sigmask(SIG_UNBLOCK, &signal_mask, NULL);
-        } else {
-                return 0;
-        }
+	// Unlock the queue and unblock signals
+	if (sem_post(&i2clock) == 0) {
+		return !pthread_sigmask(SIG_UNBLOCK, &signal_mask, NULL);
+	} else {
+		return 0;
+	}
 }
 
 
@@ -218,19 +218,19 @@ static int unlock () {
  *	Initilization for i2c-io code
  */
 
-	void init(int i2cslave){
-		log_string(-10, "Sem init");
-		sem_init(&i2clock,0,1);
-		log_string(-10, "Sem wait");
-		lock();
-		if (( i2cDev = open( i2cDevName, O_RDWR )) < 0 )
-		{
-			LogError( "Error  opening '%s': %s\n", i2cDevName, strerror( errno ));
-			exit( 1 );
-		}
-		I2cSetSlaveAddress( i2cDev, 0x0b, I2C_USE_CRC );
-		unlock();
+void init(int i2cslave){
+	log_string(-10, "Sem init");
+	sem_init(&i2clock,0,1);
+	log_string(-10, "Sem wait");
+	lock();
+	if (( i2cDev = open( i2cDevName, O_RDWR )) < 0 )
+	{
+		LogError( "Error  opening '%s': %s\n", i2cDevName, strerror( errno ));
+		exit( 1 );
 	}
+	I2cSetSlaveAddress( i2cDev, 0x0b, I2C_USE_CRC );
+	unlock();
+}
 // End Init
 
 //*********************************************************************************
@@ -447,6 +447,9 @@ unsigned short readEnc(int encNumber){
 	unsigned char addr = 0;
 	switch (encNumber){
 		case 0:
+			addr = 0x36;
+			break;
+		case 1:
 			addr = 0x3E;
 			break;
 		default:
@@ -454,10 +457,28 @@ unsigned short readEnc(int encNumber){
 	}
 	short temp = 0;
 	lock();
-	I2cSetSlaveAddress( i2cDev, 0x3E, 0 );
+	I2cSetSlaveAddress( i2cDev, addr, 0 );
 	I2cReadBytes( i2cDev, 10, &temp, 2);
 	I2cSetSlaveAddress( i2cDev, 0x0b, I2C_USE_CRC );
 	unlock();
 	return temp;
 }
-	
+
+void steer(int encNumber, uint16_t direction){
+	unsigned char addr = 0;
+	switch (encNumber){
+		case 0:
+			addr = 0x36;
+			break;
+		case 1:
+			addr = 0x3E;
+			break;
+		default:
+			return 0;
+	}
+	lock();
+	I2cSetSlaveAddress( i2cDev, addr, 0);
+	I2cWriteBytes( i2cDev, 1, &direction, 2);
+	I2cSetSlaveAddress( i2cDev, 0x0b, I2C_USE_CRC);
+	unlock();
+}
