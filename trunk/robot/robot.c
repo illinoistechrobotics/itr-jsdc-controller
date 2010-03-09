@@ -106,11 +106,13 @@ int main(int argc, char *argv[])
 	 if(server_port == 0){
 		 server_port = 31337;
 	 }
-
+	log_string(-10, "Creating Queue");
 	robot_queue_create(&q);
 
 	// Initialize the I2C and servos
+	log_string(-10, "Init");
 	init(0x0b);
+	log_string(-10, "servoInit");
 	servoInit();
 
 	// Open up the socket

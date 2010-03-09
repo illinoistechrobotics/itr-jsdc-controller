@@ -68,15 +68,6 @@ void on_button_up(robot_event *ev) {
 	if(ev->index == CON_ARM_DOWN){
 		setPin(2,1,0);
 	}
-
-	if(ev->index == CON_MP3_PLAY) {
-		setPin(2,7,0);
-	}
-	if(ev->index == CON_MP3_NEXT) {
-		setPin(2,5,0);
-	}
-	if(ev->index == CON_MP3_PREV) {
-	}
 }
 
 void on_button_down(robot_event *ev) {	
@@ -90,15 +81,6 @@ void on_button_down(robot_event *ev) {
 	if(ev->index == CON_GRIP){
 		gripper = 1-gripper;
 		setPin(2,2,gripper);
-	}
-
-	if(ev->index == CON_SUCK){
-		suck = 1-suck;
-		setPin(2,3,suck);
-	}
-	if(ev->index == CON_MP3_PREV){
-		drum = 1-drum;
-		setPin(2,4,drum);
 	}
 }
 

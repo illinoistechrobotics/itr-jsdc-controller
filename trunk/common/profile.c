@@ -9,11 +9,9 @@ int		  CON_XAXIS,
 		  CON_ARM_UP,
 		  CON_ARM_DOWN,
 		  CON_GRIP,
-		  CON_SUCK,
+		  CON_FRONT,
 		  CON_EXTRA,
-		  CON_MP3_PLAY,
-		  CON_MP3_NEXT,
-		  CON_MP3_PREV;
+		  CON_REAR;
 
 void setProfile(char data){
 	switch(data) {
@@ -26,7 +24,8 @@ void setProfile(char data){
 			CON_ARM_UP 		= 0x09;
 			CON_ARM_DOWN 	= 0x06;
 			CON_GRIP 		= 0x00;
-			CON_SUCK		= 0x02;
+			CON_FRONT		= 0x02;
+			CON_REAR		= 0x03;
 			CON_EXTRA		= 0x01;
 			break;
 		case 'p':
@@ -37,13 +36,11 @@ void setProfile(char data){
 			CON_TURBO1 		= 0x05;
 			CON_TURBO2 		= 0x07;
 			CON_ARM_UP 		= 0x04;
-			CON_ARM_DOWN 	= 0x06;
+			CON_ARM_DOWN 		= 0x06;
 			CON_GRIP 		= 0x01;
-			CON_SUCK		= 0x02;
+			CON_FRONT		= 0x02;
 			CON_EXTRA		= 0x08; 
-			CON_MP3_PLAY    = 0x03;
-			CON_MP3_NEXT    = 0x02;
-			CON_MP3_PREV    = 0x00;
+			CON_REAR	    	= 0x03;
 			break;
 	}
 }

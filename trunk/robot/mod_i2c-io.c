@@ -172,12 +172,45 @@ enum
 
 
 static int i2cDev = -1;
-static sem_t *i2clock;
+static sem_t i2clock;
 
 // ---- Private Function Prototypes -----------------------------------------
 
 static void writeReg(int RevNum, int data);
 const char         *i2cDevName = "/dev/i2c-0";
+
+static int lock () {
+        sigset_t   signal_mask;  /* signals to block         */
+
+        // List of signals to block
+        sigemptyset (&signal_mask);
+        sigaddset (&signal_mask, SIGINT);
+        sigaddset (&signal_mask, SIGTERM);
+        sigaddset (&signal_mask, SIGHUP);
+        // Block signals and lock the queue
+        if (pthread_sigmask(SIG_BLOCK, &signal_mask, NULL) == 0) {
+                return !(sem_wait(&i2clock));
+        } else {
+                return 0;
+        }
+}
+static int unlock () {
+        sigset_t   signal_mask;  /* signals to block         */
+
+        // List of signals to block
+        sigemptyset (&signal_mask);
+        sigaddset (&signal_mask, SIGINT);
+        sigaddset (&signal_mask, SIGTERM);
+        sigaddset (&signal_mask, SIGHUP);
+
+        // Unlock the queue and unblock signals
+        if (sem_post(&i2clock) == 0) {
+                return !pthread_sigmask(SIG_UNBLOCK, &signal_mask, NULL);
+        } else {
+                return 0;
+        }
+}
+
 
 
 //********************************************************************************
@@ -186,15 +219,17 @@ const char         *i2cDevName = "/dev/i2c-0";
  */
 
 	void init(int i2cslave){
-		sem_init(i2clock,0,1);
-		sem_wait(i2clock);
+		log_string(-10, "Sem init");
+		sem_init(&i2clock,0,1);
+		log_string(-10, "Sem wait");
+		lock();
 		if (( i2cDev = open( i2cDevName, O_RDWR )) < 0 )
 		{
 			LogError( "Error  opening '%s': %s\n", i2cDevName, strerror( errno ));
 			exit( 1 );
 		}
 		I2cSetSlaveAddress( i2cDev, 0x0b, I2C_USE_CRC );
-		sem_post(i2clock);
+		unlock();
 	}
 // End Init
 
@@ -263,9 +298,9 @@ void setMotor(int motor, int position){
 		if(position > 255) position = 255;
 		if(position < 0) position = 0;
 		uint16_t regVal16 = (((position*8u)+500)*2); 		//Equation to convert 0-255 to 500-2500 (from gumstix wiki)
-		sem_wait(i2clock);
+		lock();
 		I2C_IO_WriteReg16( i2cDev, motor_regs[motor], regVal16 ); //Send register write command for the correct motor register
-		sem_post(i2clock);
+		unlock();
 	}
 }
 
@@ -287,9 +322,9 @@ void setServo(int servo, int position){
 void setMotorPWM(int motor, int msLength){
 	if( motor <= 5  && motor >= 0) {                             //Check and make sure the motor is one we know about
 		int motor_regs[] = { OCR3A , OCR3B , OCR3C , OCR1A , OCR1B , OCR1C };  //Register map
-		sem_wait(i2clock);
+		lock();
 		I2C_IO_WriteReg16( i2cDev, motor_regs[motor], msLength * 2 ); //Send register write command for the correct motor register, multiply times 2 to allow the correct value
-		sem_post(i2clock);
+		unlock();
 	}
 }
 
@@ -309,25 +344,27 @@ void setServoPWM(int motor, int msLength){
 
 int getPin(uint8_t portNum, uint8_t pin){
 	uint8_t pinVal;
-	sem_wait(i2clock);
+	lock();
 	if ( I2C_IO_GetGPIO( i2cDev, portNum, &pinVal ))
 	{
+		unlock();
 		return (( pinVal & ( 1 << pin )) != 0 );
 	}
 	else
 	{
 		LogError( "Failed to retrieve value for %c.%d\n",
 				portNum + 'A', pin );
+		unlock();
 		return 0;
 	}
-	sem_post(i2clock);
 }
 
 int getDir(uint8_t portNum, uint8_t pin){
 	uint8_t pinVal;
-	sem_wait(i2clock);
+	lock();
 	if ( I2C_IO_GetGPIODir( i2cDev, portNum, &pinVal ))
 	{
+		unlock();
 		return ((( pinVal & ( 1 << pin )) != 0 ) ? 1 : 0 );
 	}
 	else
@@ -335,7 +372,7 @@ int getDir(uint8_t portNum, uint8_t pin){
 		LogError( "Failed to retrieve direction for %s.%d\n",
 				portNum + 'A', pin );
 	}
-	sem_post(i2clock);
+	unlock();
 	return 0;
 }
 
@@ -349,12 +386,13 @@ int getDir(uint8_t portNum, uint8_t pin){
 
 uint16_t getADC(uint8_t pin){
 	uint16_t    adcVal;
-	sem_wait(i2clock);
+	lock();
 	if ( I2C_IO_GetADC( i2cDev, pin, &adcVal ))
 	{
+		unlock();
 		return adcVal;
 	}
-	sem_post(i2clock);
+	unlock();
 	return 0;
 }
 
@@ -368,9 +406,9 @@ void setPin(uint8_t portNum, uint8_t pin, uint8_t value){
 			pinVal = 0;
 		else
 			pinVal = pinMask;
-		sem_wait(i2clock);
+		lock();
 		I2C_IO_SetGPIO( i2cDev, portNum, pinMask, pinVal );
-		sem_post(i2clock);
+		unlock();
 	}
 }
 
@@ -383,9 +421,9 @@ void setDir(uint8_t portNum, uint8_t pin, uint8_t value){
 			pinVal = pinMask;
 		if(value == 0)
 			pinVal = 0;
-		sem_wait(i2clock);
+		lock();
 		I2C_IO_SetGPIODir( i2cDev, portNum, pinMask, pinVal );
-		sem_post(i2clock);
+		unlock();
 	}
 }
 
@@ -393,15 +431,15 @@ void writeReg(int RegNum, int data){
 	if((RegNum >> 8) == 1){ //If is16Bit is true
 		uint16_t regVal16 = data; //create 16 bit unsigned it from data
 		RegNum = RegNum & ~0x100; //Remove is16Bit bit from regNum
-		sem_wait(i2clock);
+		lock();
 		I2C_IO_WriteReg16( i2cDev, RegNum, regVal16 ); //Write Register
-		sem_post(i2clock);
+		unlock();
 	}
 	if((RegNum >> 8) == 0){ //If is16Bit is false
 		uint8_t regVal8 = data; //Create 8 bit unsigned int from data
-		sem_wait(i2clock);
+		lock();
 		I2C_IO_WriteReg8( i2cDev, RegNum, regVal8 );//Write Register
-		sem_post(i2clock);
+		unlock();
 	}
 }
 
@@ -415,11 +453,11 @@ unsigned short readEnc(int encNumber){
 			return 0;
 	}
 	short temp = 0;
-	sem_wait(i2clock);
+	lock();
 	I2cSetSlaveAddress( i2cDev, 0x3E, 0 );
 	I2cReadBytes( i2cDev, 10, &temp, 2);
 	I2cSetSlaveAddress( i2cDev, 0x0b, I2C_USE_CRC );
-	sem_post(i2clock);
+	unlock();
 	return temp;
 }
 	
