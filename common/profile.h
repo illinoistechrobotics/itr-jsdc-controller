@@ -8,8 +8,6 @@ extern int CON_XAXIS,
 			  CON_ARM_UP,
 			  CON_ARM_DOWN,
 			  CON_GRIP,
-			  CON_SUCK,
+			  CON_FRONT,
 			  CON_EXTRA,
-              CON_MP3_PLAY,
-              CON_MP3_NEXT,
-              CON_MP3_PREV;
+			  CON_REAR;
