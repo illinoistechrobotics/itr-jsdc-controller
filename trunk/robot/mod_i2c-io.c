@@ -492,4 +492,3 @@ void steer(int encNumber, uint16_t direction){
 	I2cSetSlaveAddress( i2cDev, 0x0b, I2C_USE_CRC);
 	unlock();
 }
->>>>>>> .r28
