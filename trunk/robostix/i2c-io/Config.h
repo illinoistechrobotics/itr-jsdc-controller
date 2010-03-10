@@ -47,6 +47,15 @@
 
 #define CFG_I2C_MASTER_USE_BOOTLOADER   1
 
+//User defined configuration
+//Added by Jesse Taylor 03-08-2010
+//Enables Fenrir robostix code
+
+#define CFG_TIMER_MS_TICK 1 //Creates a 32-bit millisecond timer
+#define CFG_TIMER_MICRO_TICK 0 //Sets timer to tick every millisecond
+#define CFG_TIMER0_INCLUDE "sensors.h"
+#define CFG_TIMER0_MS_TICK processData()
+
 #endif  // CONFIG_H
 
 

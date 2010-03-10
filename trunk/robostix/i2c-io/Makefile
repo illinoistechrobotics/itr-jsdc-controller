@@ -18,7 +18,9 @@ COMMON_OBJS = \
 	i2c-slave-boot.o \
 	Delay.o 	\
 	Timer.o 	\
-	Hardware.o
+	Hardware.o	\
+	a2d_10.o	\
+	sensors.o
 
 #COMMON_OBJS += \
 #	UART.o 		\
