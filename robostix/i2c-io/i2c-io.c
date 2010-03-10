@@ -43,6 +43,8 @@
 
 #include "svn-version.h"
 
+#include "sensors.h"
+
 /* ---- Public Variables -------------------------------------------------- */
 
 /* ---- Private Constants and Types --------------------------------------- */
@@ -395,6 +397,19 @@ int ProcessCommand( I2C_Data_t *packet )
 
             return 0;
         }
+
+	case I2C_IO_WRITE_VAR:
+	{
+		I2C_IO_WriteVar_t *req = (I2C_IO_WriteVar_t *)&packet->m_data[ 2 ];	// +1 for cmd, +1 for len tower
+		global_vars[req->var] = req->val;
+
+		if(req->var == TARGET_ANGLE){
+			isum = 0;
+		}
+
+		return 0;
+	}
+
     }
 
     // It wasn't one of our commands, see if it's a bootloader command.

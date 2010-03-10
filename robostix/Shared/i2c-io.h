@@ -212,6 +212,26 @@ typedef struct
 
 #define I2C_IO_WRITE_REG_16  0x0A
 
+//---------------------------------------------------------------------------
+/*
+ * Fenrir Additional I2C commands - Added by Jesse Taylor, 03-09-2010
+ */
+
+//---------------------------------------------------------------------------
+/**
+*   The I2C_IO_WRITE_VAR command writes a user variable.
+*/
+
+typedef struct
+{
+    uint8_t     var;    ///< Index of the register to be read.
+    uint16_t    val;    ///< Value to write
+
+} I2C_IO_WriteVar_t;
+
+#define I2C_IO_WRITE_VAR  0x0B
+
+
 /* ---- Variable Externs ------------------------------------------------- */
 
 /* ---- Function Prototypes ---------------------------------------------- */

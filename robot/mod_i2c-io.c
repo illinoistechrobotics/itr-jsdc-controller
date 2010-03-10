@@ -463,6 +463,16 @@ unsigned short readEnc(int encNumber){
 	unlock();
 	return temp;
 }
+	
+void setVariable(uint8_t var, short data){
+	unsigned char d [3];
+	d[0] = var;
+	d[1] = (data >> 8) & 0xFF;
+	d[2] = data & 0xFF;
+	lock();
+	I2cWriteBytes( i2cDev, 11, &d, 3);
+	unlock();
+}
 
 void steer(int encNumber, uint16_t direction){
 	unsigned char addr = 0;
@@ -482,3 +492,4 @@ void steer(int encNumber, uint16_t direction){
 	I2cSetSlaveAddress( i2cDev, 0x0b, I2C_USE_CRC);
 	unlock();
 }
+>>>>>>> .r28

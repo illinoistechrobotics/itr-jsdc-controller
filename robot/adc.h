@@ -21,9 +21,9 @@
 
 #include "robot_queue.h"
 
-//#define NO_ADC   //To eliminate ADC code
+#define NO_ADC   //To eliminate ADC code
 
-#define ADC_COUNT 3 //Number of ADC's to poll, cant remember if its 0 or 1 indexed
+#define ADC_COUNT 1 //Number of ADC's to poll, cant remember if its 0 or 1 indexed
 
 #define POLL_INTERVAL 1000000/50  //50Hz polling interval
 

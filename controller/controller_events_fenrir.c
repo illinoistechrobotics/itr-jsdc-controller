@@ -16,104 +16,157 @@
 #include "events.h"
 #include "profile.h"
 
-int turbo = 0;
+#define CTRL_DIRECT_DRIVE 0x00
+#define CTRL_DIRECT_ANGLE 0x01
+#define CTRL_VELOCITY 0x02
+
+#define MAX 126 //So 0=>1 and 255=>254
+#define M1POLARITY 1
+#define M2POLARITY -1
+#define TURNING_SCALE 4
+
+#define TARGET_ANGLE 		0x00
+#define TARGET_VELOCITY		0x01
+#define TARGET_TURN_DIFF	0x02
+#define TARGET_YAW_RATE		0x03
+#define TARGET_YAW		0x04
+#define KPROP			0x05
+#define KRATE			0x06
+#define KINT			0x07
+#define KTERM			0x08
+#define MAXPWM			0x09
+#define FRAME_ANGLE_RESET	0x0A
+#define VELOCITY_RESET		0x0B
+
+#define KPROP_VALUE		8;
+#define KRATE_VALUE		2;
+#define KINT_VALUE		0;
+
+unsigned char ctrl_mode = CTRL_DIRECT_ANGLE;
+int xin = 0;
+int yin = 0;
 
 void on_init() {
-    robot_event ev;
-    ev.command = ROBOT_EVENT_CMD_START;
-    ev.index = 0;
-    ev.value = 0;
+	robot_event ev;
+	ev.command = ROBOT_EVENT_CMD_START;
+	ev.index = 0;
+	ev.value = 0;
 
 	log_string(-1, "Controller is initializing");
+	send_event(&ev);
+
+	ev.command = ROBOT_EVENT_VAR;
+	ev.index = KPROP;
+	ev.value = KPROP_VALUE;
+	send_event(&ev);
+
+	ev.index = KRATE;
+	ev.value = KRATE_VALUE;
+	send_event(&ev);
+
+	ev.index = KINT;
+	ev.value = KINT_VALUE;
 	send_event(&ev);
 }
 
 void on_shutdown() {
-    robot_event ev;
-    ev.command = ROBOT_EVENT_CMD_STOP;
-    ev.index = 0;
-    ev.value = 0;
+	robot_event ev;
+	ev.command = ROBOT_EVENT_CMD_STOP;
+	ev.index = 0;
+	ev.value = 0;
 
 	log_string(-1, "Controller is shutting down");
 	send_event(&ev);
 }
 
 void on_button_up(robot_event *ev) {
-	if(ev->index == CON_TURBO1 || ev->index == CON_TURBO2)
-		turbo--;
 	send_event(ev);
 }
 
 void on_button_down(robot_event *ev) {
-	if(ev->index == CON_TURBO1 || ev->index == CON_TURBO2)
-		turbo++;
 	send_event(ev);
 }
 
 void on_axis_change(robot_event *ev) {
-    
-	 static int max = 0; //maximum value protection (for normalizing the motors)
-	 static int mot1 = 0, mot2 = 0, mot3 = 0, mot4 = 0; //Motor values (for mechanum steering)
-	 static unsigned char xAxis = 127, yAxis = 127, rAxis = 127; //x (lateral) y(forward) and r (rotational) axis values
-	 static int xNew = 0, yNew = 0, rNew =0; // 0 centered axis values
+	/* +Y (up) move forward
+	 * -Y (down) move backward
+	 * -X (left) decrease left power, turn left
+	 * +X (right) decrease right power, turn right
+	 */
+
+	int mot1 = 0;
+	int mot2 = 0;
+	robot_event new_ev;
+	unsigned char axis = ev->index;
+	unsigned char value = ev->value;
+
+
 	
-	 robot_event new_ev;
-    unsigned char axis = ev->index;
-    unsigned char value = ev->value;
-	 if(value == 255) value = 254;
-	 if(value == 0) value = 1;
-	 
-	 send_event(ev);
-    
-	 if(axis == CON_XAXIS || axis == CON_YAXIS || axis == CON_RAXIS) {
-        if(axis == CON_YAXIS)
-            yAxis = value;
-        if(axis == CON_XAXIS)
-            xAxis = value;
-        if(axis == CON_RAXIS)
-            rAxis = -value;
-        xNew = (int)xAxis - 127;
-        yNew = (int)yAxis - 127;
-        rNew = (int)rAxis - 127;
-        mot1 = -(yNew - xNew + rNew);
-        mot2 = (yNew + xNew - rNew);
-        mot3 = -(yNew + xNew + rNew);
-        mot4 = (yNew - xNew - rNew);
-        if(abs(mot1) >  127 || abs(mot2) > 127 || abs(mot3) > 127 || abs(mot4) > 127) {
-            max = 0;
-            if(abs(mot1)>max)
-                max = abs(mot1);
-            if(abs(mot2)>max)
-                max = abs(mot2);
-            if(abs(mot3)>max)
-                max = abs(mot3);
-            if(abs(mot4)>max)
-                max = abs(mot4);
-            mot1=(int)((float)mot1/max*127);
-            mot2=(int)((float)mot2/max*127);
-            mot3=(int)((float)mot3/max*127);
-            mot4=(int)((float)mot4/max*127);
-        }
-		mot1 = (mot1*2)/(4 - turbo);
-		mot2 = (mot2*2)/(4 - turbo);
-		mot3 = (mot3*2)/(4 - turbo);
-		mot4 = (mot4*2)/(4 - turbo);
-		
-		
-		// send four axes out
-        new_ev.command = ROBOT_EVENT_MOTOR;
-        new_ev.index = 0; new_ev.value = mot1 + 127;
-		send_event(&new_ev);
+	if(ctrl_mode == CTRL_DIRECT_DRIVE){
+		if(axis == CON_YAXIS || axis == CON_XAXIS){
+			if(axis == CON_YAXIS){
+				yin = (int)value - 127;
+			} else if (axis == CON_XAXIS){
+				xin = (int)value - 127;
+				if(abs(xin) < (int)((float) abs(yin) / 32) + 3){ // Deadband scaled from 6 at full y, 3 at center
+					xin = 0; 
+				} else {
+					xin = ((float)xin / TURNING_SCALE);
+				}
+			}
 
-        new_ev.index = 1; new_ev.value = mot2 + 127;
-		send_event(&new_ev);
+			mot1 = yin + xin;
+			mot2 = yin - xin;
 
-        new_ev.index = 2; new_ev.value = mot3 + 127;
-		send_event(&new_ev);
+			mot1 *= M1POLARITY;
+			mot2 *= M2POLARITY;
+			
+			mot1 += 128;
+			mot2 += 128;
 
-        new_ev.index = 3; new_ev.value = mot4 + 127;
-		send_event(&new_ev);
+			if(mot1 > MAX) mot1 = MAX;
+			if(mot1 < 127 - MAX) mot1 = 127 - MAX;
+			if(mot2 > MAX) mot2 = MAX;
+			if(mot2 < 127 - MAX) mot2 = 127 - MAX;
+
+			new_ev.command = ROBOT_EVENT_MOTOR;
+
+			new_ev.index = 0;
+			new_ev.value = mot1;
+			send_event(&new_ev);
+
+			new_ev.index = 1;
+			new_ev.value = mot2;
+			send_event(&new_ev);
+		}
+	} else if (ctrl_mode == CTRL_DIRECT_ANGLE){
+		if(axis == CON_YAXIS || axis == CON_XAXIS){
+			if(axis == CON_YAXIS){
+				yin = (int)value - 127;
+			} else if (axis == CON_XAXIS){
+				xin = (int)value - 127;
+				if(abs(xin) < (int)((float) abs(yin) / 32) + 3){ // Deadband scaled from 6 at full y, 3 at center
+					xin = 0; 
+				} else {
+					xin = ((float)xin / TURNING_SCALE);
+				}
+			}
+
+			if (yin > 120) yin = 120;
+			if (yin < -120) yin = -120;
+
+			new_ev.command = ROBOT_EVENT_VAR;
+
+			new_ev.index = TARGET_ANGLE;
+			new_ev.value = yin;
+			send_event(&new_ev);
+
+			new_ev.index = TARGET_TURN_DIFF;
+			new_ev.value = xin;
+			send_event(&new_ev);
+		}
 	}
+
 }
 
 void on_1hz_timer(robot_event *ev) {
@@ -122,11 +175,11 @@ void on_1hz_timer(robot_event *ev) {
 
 
 void on_10hz_timer(robot_event *ev) {
-	 robot_event ev1;
-	 ev1.command = ROBOT_EVENT_CMD_NOOP;
-	 ev1.index = 0;
-	 ev1.value = 0;
-	 send_event(&ev1);
+	robot_event ev1;
+	ev1.command = ROBOT_EVENT_CMD_NOOP;
+	ev1.index = 0;
+	ev1.value = 0;
+	send_event(&ev1);
 }
 
 
@@ -157,14 +210,14 @@ void on_adc_change(robot_event *ev){
 }
 
 void on_command_code(robot_event *ev) {
-    robot_event send_ev;
+	robot_event send_ev;
 	switch(ev->command) {
 		case ROBOT_EVENT_CMD_NOOP:
-            send_ev.command = ROBOT_EVENT_NET_STATUS_OK;
-            send_ev.index = 0;
-            send_ev.value = 0;
+			send_ev.command = ROBOT_EVENT_NET_STATUS_OK;
+			send_ev.index = 0;
+			send_ev.value = 0;
 
-            send_event(&send_ev);
+			send_event(&send_ev);
 			break;
 
 		case ROBOT_EVENT_CMD_START:
@@ -176,7 +229,7 @@ void on_command_code(robot_event *ev) {
 			break;
 
 		case ROBOT_EVENT_CMD_REBOOT:
-			
+
 			log_string(-1, "Controller received CMD_REBOOT:%02X\n", ev->value);
 			break;
 		default:

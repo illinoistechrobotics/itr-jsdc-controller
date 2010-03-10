@@ -62,16 +62,18 @@ void on_shutdown() {
 }
 int gripper = 0, suck = 0, drum = 0;
 void on_button_up(robot_event *ev) {
+	/*
 	if(ev->index == CON_ARM_UP){
 		setPin(2,0,0);
 	}
 	if(ev->index == CON_ARM_DOWN){
 		setPin(2,1,0);
 	}
+	*/
 }
 
 void on_button_down(robot_event *ev) {	
-
+	/*
 	if(ev->index == CON_ARM_UP){
 		setPin(2,0,1);
 	}
@@ -82,21 +84,28 @@ void on_button_down(robot_event *ev) {
 		gripper = 1-gripper;
 		setPin(2,2,gripper);
 	}
+	*/
 }
 
 void on_axis_change(robot_event *ev){
-	if(ev->index == 4) setMotor(4, ev->value);
+	//if(ev->index == 4) setMotor(4, ev->value);
 }
 
 void on_adc_change(robot_event *ev){
-	send_event(ev);
+	
+	//send_event(ev);
 }
 
-void on_motor(robot_event *ev) {
-	if(ev->index == 0) setMotor(0, ev->value);
-	if(ev->index == 1) setMotor(1, ev->value);
-	if(ev->index == 2) setMotor(2, ev->value);
-	if(ev->index == 3) setMotor(3, ev->value);
+void on_motor(robot_event *ev){
+	if(ev->index == 0){
+		setMotor(0, ev->value);
+	} else if(ev->index == 1){
+		setMotor(1, ev->value);
+	} else if(ev->index == 2){
+		setMotor(2, ev->value);
+	} else if(ev->index == 3){
+		setMotor(3, ev->value);
+	}
 }
 
 void on_status_code(robot_event *ev) {
@@ -112,6 +121,10 @@ void on_status_code(robot_event *ev) {
 			break;
 	}
 
+}
+
+void on_set_variable(robot_event *ev) {
+	setVariable(ev->index, ev->value);
 }
 
 void on_1hz_timer(robot_event *ev){
