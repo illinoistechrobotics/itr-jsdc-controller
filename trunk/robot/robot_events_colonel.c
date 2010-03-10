@@ -63,7 +63,8 @@ void on_shutdown() {
 	setPin(6,3,1);
 	send_event(&ev);
 }
-int gripper = 0, suck = 0, drum = 0;
+
+int gripper = 0;
 void on_button_up(robot_event *ev) {
 	if(ev->index == CON_ARM_UP){
 		setPin(2,0,0);
