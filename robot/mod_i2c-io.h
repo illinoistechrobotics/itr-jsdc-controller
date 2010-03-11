@@ -33,5 +33,5 @@ extern void setDir(uint8_t port, uint8_t pin, uint8_t value); //SetDir (faster) 
 extern unsigned short readEnc(int encNumber);
 extern void setVariable(uint8_t var, short data);
 extern void steer(int encNumber, uint16_t direction);
-
+extern signed short readVariable(uint8_t var);
 #endif // !MOD_I2C_IO_H
