@@ -199,7 +199,7 @@ void on_command_code(robot_event *ev) {
 			break;
 	}
 }
-on_read_variable(robot_event* ev){
+void on_read_variable(robot_event* ev){
 }
-on_set_variable(robot_event* ev){
+void on_set_variable(robot_event* ev){
 }

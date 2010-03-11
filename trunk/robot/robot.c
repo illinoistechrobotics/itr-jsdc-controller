@@ -71,17 +71,9 @@ int main(int argc, char *argv[])
 	unsigned int server_port;
 	robot_queue q;
     robot_event ev;
-    robot_event new_ev;
 	unsigned int failcount;
 	int opt;
-    int i;
 
-    // Acceleration state variables
-    unsigned char motor_state[2][4] = {{127, 127, 127, 127},{127,127,127,127}};
-    unsigned char *cur_motors = motor_state[0];
-    unsigned char *last_motors = motor_state[1];
-    unsigned char *vi, *vf; // velocity initial, final
-    int      dv;            // velocity differential
 	log_level = 0;
 	setProfile('p');
 	server_port = 0;

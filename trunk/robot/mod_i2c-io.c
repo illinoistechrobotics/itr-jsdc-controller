@@ -219,9 +219,7 @@ static int unlock () {
  */
 
 void init(int i2cslave){
-	log_string(-10, "Sem init");
 	sem_init(&i2clock,0,1);
-	log_string(-10, "Sem wait");
 	lock();
 	if (( i2cDev = open( i2cDevName, O_RDWR )) < 0 )
 	{
@@ -486,14 +484,14 @@ signed short readVariable(uint8_t var){
 void steer(int encNumber, uint16_t direction){
 	unsigned char addr = 0;
 	switch (encNumber){
-		case 0:
+		case 1:
 			addr = 0x36;
 			break;
-		case 1:
+		case 0:
 			addr = 0x3E;
 			break;
 		default:
-			return 0;
+			return;
 	}
 	lock();
 	I2cSetSlaveAddress( i2cDev, addr, 0);

@@ -39,9 +39,6 @@
 
 int flasher = 0;
 
-unsigned char des_steer[2] = {127, 127};
-unsigned char pos[2] = {127, 127};
-
 void on_init() {
 	robot_event ev;
 	ev.command = ROBOT_EVENT_CMD_START;
@@ -148,7 +145,7 @@ void on_command_code(robot_event *ev) {
 	}
 
 }
-on_read_variable(robot_event* ev){
+void on_read_variable(robot_event* ev){
 }
-on_set_variable(robot_event* ev){
+void on_set_variable(robot_event* ev){
 }
