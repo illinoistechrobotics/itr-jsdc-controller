@@ -387,7 +387,7 @@ int ProcessCommand( I2C_Data_t *packet )
             volatile uint8_t   *regPtr = (volatile uint8_t *)(int)(req->reg);
             uint8_t             valH = (( req->val >> 8 ) & 0xFF );
             uint8_t             valL = (  req->val        & 0xFF );
-
+	    if ((req->reg == OCR3A || req->reg == OCR3B) && global_vars[DRIVE_MODE] == DIRECT_ANGLE) return 0;
             // For writing 16 bit registers, we need to write the high byte first
 
             regPtr[ 1 ] = valH;
