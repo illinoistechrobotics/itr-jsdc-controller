@@ -6,7 +6,9 @@
 // when the joystick state changes. Or when the program starts and shuts
 // down. See common/events.h for more complete information.
 //
+#define PI 3.1415926535897932384626433832
 
+#include <math.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -52,10 +54,10 @@ void on_button_down(robot_event *ev) {
 
 void on_axis_change(robot_event *ev) {
     
-	 static int max = 0; //maximum value protection (for normalizing the motors)
-	 static int mot1 = 0, mot2 = 0, mot3 = 0, mot4 = 0; //Motor values (for mechanum steering)
+	 static int drive = 0, front = 0, rear = 0; //Motor values (for mechanum steering)
 	 static unsigned char xAxis = 127, yAxis = 127, rAxis = 127; //x (lateral) y(forward) and r (rotational) axis values
-	 static int xNew = 0, yNew = 0, rNew =0; // 0 centered axis values
+	 static int xNew = 0, yNew = 0, rNew =0, rDrive = 0; // 0 centered axis values
+	 int strafe;
 	
 	 robot_event new_ev;
     unsigned char axis = ev->index;
@@ -75,52 +77,56 @@ void on_axis_change(robot_event *ev) {
         xNew = (int)xAxis - 127;
         yNew = (int)yAxis - 127;
         rNew = (int)rAxis - 127;
-        mot1 = -(yNew - xNew + rNew);
-        mot2 = (yNew + xNew - rNew);
-        mot3 = -(yNew + xNew + rNew);
-        mot4 = (yNew - xNew - rNew);
-        if(abs(mot1) >  127 || abs(mot2) > 127 || abs(mot3) > 127 || abs(mot4) > 127) {
-            max = 0;
-            if(abs(mot1)>max)
-                max = abs(mot1);
-            if(abs(mot2)>max)
-                max = abs(mot2);
-            if(abs(mot3)>max)
-                max = abs(mot3);
-            if(abs(mot4)>max)
-                max = abs(mot4);
-            mot1=(int)((float)mot1/max*127);
-            mot2=(int)((float)mot2/max*127);
-            mot3=(int)((float)mot3/max*127);
-            mot4=(int)((float)mot4/max*127);
-        }
-		mot1 = (mot1*2)/(4 - turbo);
-		mot2 = (mot2*2)/(4 - turbo);
-		mot3 = (mot3*2)/(4 - turbo);
-		mot4 = (mot4*2)/(4 - turbo);
-				
-		
-		// send four axes out
-        new_ev.command = ROBOT_EVENT_MOTOR;
-     /*   new_ev.index = 0; new_ev.value = mot1 + 127;
+	rDrive = rNew/127*250;
+
+        if(xNew > 0 && yNew >= 0)
+		strafe = (int)((250*atan(yNew/xNew)/(.5*PI)-250)*(-1));
+	else if (xNew < 0 && yNew >= 0)
+		strafe = (int)((250*atan((-1)*yNew/xNew)/(.5*PI)-250));
+	else if (xNew < 0 && yNew >= 0)
+		strafe = (int)((250*atan(yNew/xNew)/(.5*PI)+250)*(-1));
+	else if (xNew < 0 && yNew >= 0)
+		strafe = (int)((250*atan((-1)*yNew/xNew)/(.5*PI)+250));
+	else if (xNew == 0 && yNew >= 0)
+		strafe = 500; //Translates to 1000 == 0, but thats later)
+	else
+		strafe = -500;
+
+	if(strafe < 0)
+		strafe = -500 - strafe;
+
+	strafe += 500;
+	front = strafe + rDrive;
+	rear = strafe - rDrive;
+	if(front > 999)
+		front -= 1000;
+	if(front < 0)
+		front += 1000;
+	if(rear > 999)
+		rear -= 1000;
+	if(rear < 0)
+		rear += 1000;
+	int temp = sqrt(pow((double)xNew,2.0)+pow((double)yNew,2.0)); 
+	if(temp >= abs(rNew))
+		drive = temp;
+	else 
+		drive = abs(rNew);
+	if(drive > 127) drive = 127;
+	if(drive < -127) drive = -127;
+	drive += 128;
+
+	new_ev.command = ROBOT_EVENT_MOTOR;
+        new_ev.index = 0; new_ev.value = drive;
 		send_event(&new_ev);
 
-        new_ev.index = 1; new_ev.value = mot2 + 127;
+        new_ev.index = 1; new_ev.value = drive;
 		send_event(&new_ev);
 
-        new_ev.index = 2; new_ev.value = mot3 + 127;
+        new_ev.index = 6; new_ev.value = front;
 		send_event(&new_ev);
 
-        new_ev.index = 3; new_ev.value = mot4 + 127;
-		send_event(&new_ev); */
-	if(ev->index == 1){	
-		new_ev.index = 4; new_ev.value = ev->value;
+        new_ev.index = 7; new_ev.value = rear;
 		send_event(&new_ev);
-	}
-	if(ev->index == 2){
-		new_ev.index = 5; new_ev.value = ev->value;
-		send_event(&new_ev);
-	}
 	 }
 }
 
@@ -193,4 +199,7 @@ void on_command_code(robot_event *ev) {
 			break;
 	}
 }
-
+on_read_variable(robot_event* ev){
+}
+on_set_variable(robot_event* ev){
+}

@@ -56,7 +56,7 @@ void on_init() {
 	log_string(-1, "Controller is initializing");
 	send_event(&ev);
 
-	ev.command = ROBOT_EVENT_VAR;
+	ev.command = ROBOT_EVENT_SET_VAR;
 	ev.index = KPROP;
 	ev.value = KPROP_VALUE;
 	send_event(&ev);
@@ -159,7 +159,7 @@ void on_axis_change(robot_event *ev) {
 			if (yin > 120) yin = 120;
 			if (yin < -120) yin = -120;
 
-			new_ev.command = ROBOT_EVENT_VAR;
+			new_ev.command = ROBOT_EVENT_SET_VAR;
 
 			new_ev.index = TARGET_ANGLE;
 			new_ev.value = yin;

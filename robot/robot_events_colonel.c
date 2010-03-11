@@ -91,73 +91,14 @@ void on_button_down(robot_event *ev) {
 void on_axis_change(robot_event *ev){
 }
 
-void update_steer(){
-	signed int diff;
-	int i;
-	for(i = 0; i < 2; i++){
-		diff = -((int)des_steer[i] - (int)(pos[i]));
-		if(diff <= 10 && diff > 0) {
-			if(diff > 5)
-				diff = 10;
-			else if (diff > 3)
-				diff = 5;
-			else
-				diff = 0;
-		}
-		if(diff >= -10 && diff < 0) {
-			if(diff < -5)
-				diff = -10;
-			else if (diff < -3)
-				diff = -5;
-			else
-				diff = 0;
-		}
-		if(abs(diff) > 127){
-			if(diff > 0)
-				diff = 127;
-			else
-				diff = -127;
-		}
-		setMotor(i+4, 127 + (diff>>i));
-	}
-}
-
 void on_adc_change(robot_event *ev){
-	int temp;
-	if(ev->index == 0 || ev->index == 1){
-		if(ev->index == 0){
-			temp =  (int)ev->value - 0x7F; //Center adustment
-			if(temp < 0)
-				temp *= 127./75.;		   //Left adjustment
-			if(temp > 0)
-				temp *= 127./75.;		   //Right Adjustment
-			temp = temp + 127;			   //Correct back to 127 center
-			pos[0] = (char)temp;
-		}
-		if(ev->index == 1){
-			temp =  -((int)ev->value - 0x7F); //Center adustment
-			if(temp < 0)
-				temp *= 127./102.;		   //Left adjustment
-			if(temp > 0)
-				temp *= 127./102.;		   //Right Adjustment
-			temp = temp + 127;			   //Correct back to 127 center
-			if(temp < 0)
-				temp = 0;
-			if(temp > 255)
-				temp = 255;
-			pos[1] = (char)temp;
-		}
-		update_steer();
-	}
 }
 
 void on_motor(robot_event *ev){ 
-	if(ev->index <= 3)
-		setMotor(ev->index, ev->value);	
-	if(ev->index == 4 || ev->index == 5){
-		des_steer[ev->index - 4] = ev->value;
-		update_steer();
-	}
+	if(ev->index < 6)
+		setMotor(ev->index, ev->value);
+	if(ev->index > 5 && ev->index < 8)
+		steer(ev->index - 6, ev->value);
 }
 
 void on_status_code(robot_event *ev) {
@@ -207,4 +148,7 @@ void on_command_code(robot_event *ev) {
 	}
 
 }
-
+on_read_variable(robot_event* ev){
+}
+on_set_variable(robot_event* ev){
+}
