@@ -473,11 +473,16 @@ void setVariable(uint8_t var, short data){
 }
 
 signed short readVariable(uint8_t var){
-	signed short data;
+	unsigned char d [3];
+	d[0] = var;
+	d[1] = 0x00;
+	d[2] = 0x00;
 	lock();
-	I2cReadBytes( i2cDev, 12, &data, 3);
+	I2cReadBytes( i2cDev, 12, &d, 2);
 	unlock();
-	return data;
+	signed short data = d[1];
+	data |= (signed short)d[2] << 8;
+	return d;
 }
 
 
