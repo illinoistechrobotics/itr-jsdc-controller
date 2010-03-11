@@ -25,6 +25,7 @@
 #include "Hardware.h"
 #include "Timer.h"
 #include "UART.h"
+#include "sensors.h"
 
 /* ---- Public Variables -------------------------------------------------- */
 /* ---- Private Constants and Types --------------------------------------- */
@@ -101,7 +102,7 @@ void InitHardware( void )
     }
 
 #endif
-
+    initGlobalVars();
     InitTimer();
 
 } /* InitHardware */

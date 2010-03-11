@@ -35,13 +35,29 @@
 #define GYRO_FULL_LIMIT_LOW	412
 #define GYRO_FULL_LIMIT_HIGH	572
 
-signed short global_vars [13];
+signed short global_vars[13];
 signed short frame_angle;
 signed short error;
 signed long isum;
 
 void checkArm(void);
 void calculatePWM(void);
+
+void initGlobalVars(){
+	global_vars[0] = 0;
+	global_vars[1] = 0;
+	global_vars[2] = 0;
+	global_vars[3] = 0;
+	global_vars[4] = 0;
+	global_vars[5] = 8;
+	global_vars[6] = 0;
+	global_vars[7] = 2;
+	global_vars[8] = 0;
+	global_vars[9] = 255;
+	global_vars[10] = 0;
+	global_vars[11] = 0;
+	global_vars[12] = 0;
+}
 
 //Called every millisecond
 void processData(){

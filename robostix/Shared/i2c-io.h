@@ -231,6 +231,19 @@ typedef struct
 
 #define I2C_IO_WRITE_VAR  0x0B
 
+//---------------------------------------------------------------------------
+/**
+*   The I2C_IO_READ_VAR command reads a user variable.
+*/
+
+typedef struct
+{
+    uint8_t     var;    ///< Index of the register to be read.
+    uint16_t    val;    ///< Value to read
+
+} I2C_IO_ReadVar_t;
+
+#define I2C_IO_READ_VAR  0x0C
 
 /* ---- Variable Externs ------------------------------------------------- */
 

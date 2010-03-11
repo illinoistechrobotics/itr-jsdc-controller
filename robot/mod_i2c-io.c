@@ -475,6 +475,7 @@ void setVariable(uint8_t var, short data){
 }
 
 signed short readVariable(uint8_t var){
+	signed short data;
 	lock();
 	I2cReadBytes( i2cDev, 12, &data, 3);
 	unlock();
