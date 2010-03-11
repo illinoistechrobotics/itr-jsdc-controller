@@ -174,7 +174,6 @@ void on_axis_change(robot_event *ev) {
 }
 
 void on_1hz_timer(robot_event *ev) {
-
 }
 
 
@@ -210,7 +209,7 @@ void on_status_code(robot_event *ev) {
 
 
 void on_adc_change(robot_event *ev){
-	log_string(-1, "ADC %02X value %02X", ev->index, ev->value);
+	log_string(0, "ADC %02X value %02X", ev->index, ev->value);
 }
 
 void on_read_variable(robot_event *ev){

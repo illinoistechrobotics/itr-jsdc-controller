@@ -191,6 +191,7 @@ int main(int argc, char *argv[])
 			case ROBOT_EVENT_SET_VAR:
 				failcount = 0;
 				on_set_variable(&ev);
+				log_string(-1,"Set var: %d to %d. robot.c", ev.index, ev.value);
 				break;
 			case ROBOT_EVENT_READ_VAR:
 				failcount = 0;
@@ -241,6 +242,11 @@ void usage(char *progname) {
 
 void failsafe_mode(robot_queue *q) {
 	robot_event ev;
+	ev.command = ROBOT_EVENT_SET_VAR;
+	ev.index = 12;
+	ev.value = 0;
+	robot_queue_enqueue(q, &ev);
+
 	ev.command = ROBOT_EVENT_MOTOR;
 	ev.index = 0;
 	ev.value = 127;

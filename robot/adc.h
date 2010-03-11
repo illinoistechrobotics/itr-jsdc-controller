@@ -21,7 +21,7 @@
 
 #include "robot_queue.h"
 
-#define NO_ADC   //To eliminate ADC code
+//#define NO_ADC   //To eliminate ADC code
 
 #define ADC_COUNT 1 //Number of ADC's to poll, cant remember if its 0 or 1 indexed
 

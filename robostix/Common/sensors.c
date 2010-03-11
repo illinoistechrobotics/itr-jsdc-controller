@@ -49,9 +49,9 @@ void initGlobalVars(){
 	global_vars[2] = 0;
 	global_vars[3] = 0;
 	global_vars[4] = 0;
-	global_vars[5] = 8;
+	global_vars[5] = 4;
 	global_vars[6] = 0;
-	global_vars[7] = 2;
+	global_vars[7] = 0;
 	global_vars[8] = 0;
 	global_vars[9] = 255;
 	global_vars[10] = 0;
@@ -86,7 +86,7 @@ void processData(){
 
 		x_gyro_sum += x_gyro; //Integrate w/ trapezoidal rule, scaled 1000x because we don't divide by 1000
 
-		frame_angle = x_gyro_sum - (x_gyro >> 1) / 1000;
+		frame_angle = (x_gyro_sum - (x_gyro >> 1)) / 1000;
 
 		calculatePWM();
 

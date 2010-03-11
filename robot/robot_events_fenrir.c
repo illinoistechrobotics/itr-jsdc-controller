@@ -62,29 +62,29 @@ void on_shutdown() {
 }
 int gripper = 0, suck = 0, drum = 0;
 void on_button_up(robot_event *ev) {
-	/*
+	
 	if(ev->index == CON_ARM_UP){
-		setPin(2,0,0);
+		setMotor(2,0);
 	}
 	if(ev->index == CON_ARM_DOWN){
-		setPin(2,1,0);
+		setMotor(2,0);
 	}
-	*/
+	
 }
 
 void on_button_down(robot_event *ev) {	
-	/*
+	
 	if(ev->index == CON_ARM_UP){
-		setPin(2,0,1);
+		setMotor(2,40);
 	}
 	if(ev->index == CON_ARM_DOWN){
-		setPin(2,1,1);
+		setMotor(2,-40);
 	}
 	if(ev->index == CON_GRIP){
-		gripper = 1-gripper;
-		setPin(2,2,gripper);
+		suck = 1-suck;
+		setMotor(3,254*suck);
 	}
-	*/
+	
 }
 
 void on_axis_change(robot_event *ev){
@@ -93,7 +93,7 @@ void on_axis_change(robot_event *ev){
 
 void on_adc_change(robot_event *ev){
 	
-	//send_event(ev);
+	send_event(ev);
 }
 
 void on_motor(robot_event *ev){
@@ -124,11 +124,13 @@ void on_status_code(robot_event *ev) {
 }
 
 void on_set_variable(robot_event *ev) {
+	log_string(0,"Set var: %d to %d. robot_events_fenrir.c", ev->index, ev->value);
 	setVariable(ev->index, ev->value);
 }
 
 void on_read_variable(robot_event *ev) {
-	signed short data = readVariable(ev->index, ev->value);
+	signed short data = readVariable(ev->index);
+	log_string(0,"Read var: %d is %d, robot_events_fenrir.c", ev->index, data);
 	robot_event send_ev;
 	send_ev.command = ROBOT_EVENT_READ_VAR;
 	send_ev.index = ev->index;
