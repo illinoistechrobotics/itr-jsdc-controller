@@ -33,7 +33,8 @@ enum {
     ROBOT_EVENT_TIMER		    = 0x40, // Timer events
     ROBOT_EVENT_MOTOR	   	    = 0x50, // Motor events
     ROBOT_EVENT_ADC		    = 0x60, // ADC events
-    ROBOT_EVENT_VAR		    = 0x70, // Set variable events
+    ROBOT_EVENT_SET_VAR		    = 0x70, // Set variable events
+    ROBOT_EVENT_READ_VAR	    = 0x80, // Read variable events
 
     ROBOT_EVENT_NET_STATUS_OK       = ROBOT_EVENT_NET | 0x00, // OK
     ROBOT_EVENT_NET_STATUS_ERR      = ROBOT_EVENT_NET | 0x01, // Error
@@ -80,6 +81,9 @@ extern void on_command_code(robot_event *ev);
 
 // on_adc_change is called when the remote computer sends a ADC value
 extern void on_adc_change(robot_event *ev);
+
+// on_read_variable is called when the computer wants to read a robostix variable
+extern void on_read_variable(robot_event *ev);
 
 // on_set_variable is called when the computer wants to set a robostix variable
 extern void on_set_variable(robot_event *ev);

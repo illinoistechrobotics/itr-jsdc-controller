@@ -127,6 +127,10 @@ void on_set_variable(robot_event *ev) {
 	setVariable(ev->index, ev->value);
 }
 
+void on_read_variable(robot_event *ev) {
+	readVariable(ev->index, ev->value);
+}
+
 void on_1hz_timer(robot_event *ev){
 }
 
