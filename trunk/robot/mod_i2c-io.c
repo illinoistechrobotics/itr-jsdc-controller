@@ -474,6 +474,12 @@ void setVariable(uint8_t var, short data){
 	unlock();
 }
 
+void readVariable(uint8_t var){
+	lock();
+	unlock();
+}
+
+
 void steer(int encNumber, uint16_t direction){
 	unsigned char addr = 0;
 	switch (encNumber){

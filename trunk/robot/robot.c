@@ -196,9 +196,13 @@ int main(int argc, char *argv[])
 				failcount = 0;
 				on_adc_change(&ev);
 				break;
-			case ROBOT_EVENT_VAR:
+			case ROBOT_EVENT_SET_VAR:
 				failcount = 0;
 				on_set_variable(&ev);
+				break;
+			case ROBOT_EVENT_READ_VAR:
+				failcount = 0;
+				on_read_variable(&ev);
 				break;
 			case ROBOT_EVENT_TIMER:
 				if(ev.index == 1){

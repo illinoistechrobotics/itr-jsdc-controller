@@ -139,6 +139,9 @@ int main(int argc, char *argv[])
 	    case ROBOT_EVENT_ADC:
 		 on_adc_change(&ev);
 		 break;
+	    case ROBOT_EVENT_READ_VAR:
+		 on_read_variable(&ev);
+		 break;
             default:
                 break;
         }

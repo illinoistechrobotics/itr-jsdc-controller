@@ -177,10 +177,10 @@ int main(void)
         switch ( count )
         {
             case   0:   LED_ON();       break;
-            case  10:   LED_OFF();      break;
-            case  20:   LED_ON();       break;
-            case  30:   LED_OFF();      break;
-            case 100:   count = -1;     break;
+            case  100:   LED_OFF();      break;
+            case  200:   LED_ON();       break;
+            case  300:   LED_OFF();      break;
+            case 1000:   count = -1;     break;
         }
         count++;
 

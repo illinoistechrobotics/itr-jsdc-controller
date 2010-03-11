@@ -16,9 +16,9 @@
 #include "events.h"
 #include "profile.h"
 
-#define CTRL_DIRECT_DRIVE 0x00
-#define CTRL_DIRECT_ANGLE 0x01
-#define CTRL_VELOCITY 0x02
+#define CTRL_DIRECT_DRIVE 0x01
+#define CTRL_DIRECT_ANGLE 0x02
+#define CTRL_VELOCITY 0x03
 
 #define MAX 126 //So 0=>1 and 255=>254
 #define M1POLARITY 1
@@ -37,12 +37,13 @@
 #define MAXPWM			0x09
 #define FRAME_ANGLE_RESET	0x0A
 #define VELOCITY_RESET		0x0B
+#define DRIVE_MODE		0x0C
 
 #define KPROP_VALUE		8;
 #define KRATE_VALUE		2;
 #define KINT_VALUE		0;
 
-unsigned char ctrl_mode = CTRL_DIRECT_ANGLE;
+unsigned char ctrl_mode = CTRL_DIRECT_DRIVE;
 int xin = 0;
 int yin = 0;
 
@@ -66,6 +67,10 @@ void on_init() {
 
 	ev.index = KINT;
 	ev.value = KINT_VALUE;
+	send_event(&ev);
+
+	ev.index = DRIVE_MODE;
+	ev.value = ctrl_mode;
 	send_event(&ev);
 }
 
@@ -96,19 +101,18 @@ void on_axis_change(robot_event *ev) {
 
 	int mot1 = 0;
 	int mot2 = 0;
+	
 	robot_event new_ev;
 	unsigned char axis = ev->index;
 	unsigned char value = ev->value;
-
-
-	
 	if(ctrl_mode == CTRL_DIRECT_DRIVE){
-		if(axis == CON_YAXIS || axis == CON_XAXIS){
-			if(axis == CON_YAXIS){
+		if(axis == 3 || axis == 2){
+
+			if(axis == 3){
 				yin = (int)value - 127;
-			} else if (axis == CON_XAXIS){
+			} else {
 				xin = (int)value - 127;
-				if(abs(xin) < (int)((float) abs(yin) / 32) + 3){ // Deadband scaled from 6 at full y, 3 at center
+				if(abs(xin) < (int)((float) abs(yin) / 32.0) + 3){ // Deadband scaled from 6 at full y, 3 at center
 					xin = 0; 
 				} else {
 					xin = ((float)xin / TURNING_SCALE);
@@ -124,9 +128,9 @@ void on_axis_change(robot_event *ev) {
 			mot1 += 128;
 			mot2 += 128;
 
-			if(mot1 > MAX) mot1 = MAX;
+			if(mot1 > 127 + MAX) mot1 = 127 + MAX;
 			if(mot1 < 127 - MAX) mot1 = 127 - MAX;
-			if(mot2 > MAX) mot2 = MAX;
+			if(mot2 > 127 + MAX) mot2 = 127 + MAX;
 			if(mot2 < 127 - MAX) mot2 = 127 - MAX;
 
 			new_ev.command = ROBOT_EVENT_MOTOR;
@@ -140,8 +144,8 @@ void on_axis_change(robot_event *ev) {
 			send_event(&new_ev);
 		}
 	} else if (ctrl_mode == CTRL_DIRECT_ANGLE){
-		if(axis == CON_YAXIS || axis == CON_XAXIS){
-			if(axis == CON_YAXIS){
+		if(axis == 3 || axis == 2){
+			if(axis == 3){
 				yin = (int)value - 127;
 			} else if (axis == CON_XAXIS){
 				xin = (int)value - 127;
@@ -207,6 +211,10 @@ void on_status_code(robot_event *ev) {
 
 void on_adc_change(robot_event *ev){
 	log_string(-1, "ADC %02X value %02X", ev->index, ev->value);
+}
+
+void on_read_variable(robot_event *ev){
+	log_string(-1, "Var %02X: %d", ev->index, ev->value);
 }
 
 void on_command_code(robot_event *ev) {
