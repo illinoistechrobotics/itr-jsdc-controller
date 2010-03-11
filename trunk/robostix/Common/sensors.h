@@ -50,5 +50,6 @@ extern signed short global_vars [];
 extern signed short frame_angle;
 extern signed short error;
 extern signed long isum;
+extern void initGlobalVars(void);
 extern void processData(void);
 #endif // !SENSORS_H
