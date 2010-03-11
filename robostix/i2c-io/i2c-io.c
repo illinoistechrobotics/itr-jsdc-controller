@@ -410,6 +410,16 @@ int ProcessCommand( I2C_Data_t *packet )
 		return 0;
 	}
 
+	case I2C_IO_READ_VAR:
+	{
+		I2C_IO_ReadVar_t *req = (I2C_IO_ReadVar_t *)&packet->m_data[ 2 ];	//+1 for cmd, +1 for len tower
+		
+		packet->m_data[ 0 ] = 2;
+		packet->m_data[ 1 ] = (uint8_t)( global_vars[req->var] & 0xFF );
+            	packet->m_data[ 2 ] = (uint8_t)(( global_vars[req->var] >> 8 ) & 0xFF );
+
+		return 3;
+	}
     }
 
     // It wasn't one of our commands, see if it's a bootloader command.

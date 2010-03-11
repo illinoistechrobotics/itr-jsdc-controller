@@ -128,7 +128,12 @@ void on_set_variable(robot_event *ev) {
 }
 
 void on_read_variable(robot_event *ev) {
-	readVariable(ev->index, ev->value);
+	signed short data = readVariable(ev->index, ev->value);
+	robot_event send_ev;
+	send_ev.command = ROBOT_EVENT_READ_VAR;
+	send_ev.index = ev->index;
+	send_ev.value = data;
+	send_event(&send_ev);
 }
 
 void on_1hz_timer(robot_event *ev){
