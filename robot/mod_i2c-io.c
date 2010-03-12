@@ -459,6 +459,7 @@ unsigned short readEnc(int encNumber){
 	I2cReadBytes( i2cDev, 10, &temp, 2);
 	I2cSetSlaveAddress( i2cDev, 0x0b, I2C_USE_CRC );
 	unlock();
+	temp = ((temp & 0xFF) << 8) | ((temp & 0xFF00) >> 8);
 	return temp;
 }
 	
@@ -498,6 +499,7 @@ void steer(int encNumber, uint16_t direction){
 		default:
 			return;
 	}
+	direction = ((direction & 0xFF) << 8) | ((direction & 0xFF00) >> 8);
 	lock();
 	I2cSetSlaveAddress( i2cDev, addr, 0);
 	I2cWriteBytes( i2cDev, 1, &direction, 2);
