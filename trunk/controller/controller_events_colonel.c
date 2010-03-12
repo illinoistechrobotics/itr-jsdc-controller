@@ -56,8 +56,8 @@ void on_axis_change(robot_event *ev) {
     
 	 static int drive = 0, front = 0, rear = 0; //Motor values (for mechanum steering)
 	 static unsigned char xAxis = 127, yAxis = 127, rAxis = 127; //x (lateral) y(forward) and r (rotational) axis values
-	 static int xNew = 0, yNew = 0, rNew =0, rDrive = 0; // 0 centered axis values
-	 int strafe;
+	 static int xNew = 0, yNew = 0, rNew =0, strafe = 0; // 0 centered axis values
+	 int rDrive;
 	
 	 robot_event new_ev;
     unsigned char axis = ev->index;
@@ -74,30 +74,35 @@ void on_axis_change(robot_event *ev) {
             xAxis = value;
         if(axis == CON_RAXIS)
             rAxis = -value;
-        xNew = (int)xAxis - 127;
-        yNew = (int)yAxis - 127;
-        rNew = (int)rAxis - 127;
-	rDrive = rNew/127*250;
+        xNew = (int)xAxis - 128;
+        yNew = (int)yAxis - 128;
+        rNew = (int)rAxis - 128;
+	rDrive = (int)((double)rNew/127.*250.);
 
-        if(xNew > 0 && yNew >= 0)
-		strafe = (int)((250*atan(yNew/xNew)/(.5*PI)-250)*(-1));
-	else if (xNew < 0 && yNew >= 0)
-		strafe = (int)((250*atan((-1)*yNew/xNew)/(.5*PI)-250));
-	else if (xNew < 0 && yNew >= 0)
-		strafe = (int)((250*atan(yNew/xNew)/(.5*PI)+250)*(-1));
-	else if (xNew < 0 && yNew >= 0)
-		strafe = (int)((250*atan((-1)*yNew/xNew)/(.5*PI)+250));
-	else if (xNew == 0 && yNew >= 0)
-		strafe = 500; //Translates to 1000 == 0, but thats later)
-	else
-		strafe = -500;
+//        if(xNew > 0 && yNew <= 0)
+//		strafe = (int)((250*atan((int)yNew/(int)xNew)/(.5*PI)-250)*(-1));
+//	else if (xNew < 0 && yNew <= 0)
+//		strafe = (int)((250*atan((-1)*(int)yNew/(int)xNew)/(.5*PI)-250));
+//	else if (xNew < 0 && yNew > 0)
+//		strafe = (int)((250*atan((int)yNew/(int)xNew)/(.5*PI)+250)*(-1));
+//	else if (xNew > 0 && yNew > 0)
+//		strafe = (int)((250*atan((-1)*(int)yNew/(int)xNew)/(.5*PI)+250));
+//	else if (xNew == 0 && yNew <= 0)
+//		strafe = 0; //Translates to 1000 == 0, but thats later)
+//	else
+//		strafe = -500;
 
-	if(strafe < 0)
-		strafe = -500 - strafe;
+	if(xNew < 0)
+		strafe = (int)(((double)250*(double)atan((double)yNew/(double)xNew)/((double).5*(double)PI))-250); //Left side.
+	else if (xNew > 0)
+		strafe = (int)(((double)(250)*(double)atan((double)yNew/(double)xNew)/((double).5*(double)PI))+250); // Right Side.
+	else if (yNew < 0)
+		strafe = 0;
+	else if (yNew > 0)
+		strafe = 500;
 
-	strafe += 500;
-	front = strafe + rDrive;
-	rear = strafe - rDrive;
+	front = strafe - (int)((double)rNew/127.*250.);
+	rear = strafe + (int)((double)rNew/127.*250.);
 	if(front > 999)
 		front -= 1000;
 	if(front < 0)
@@ -114,12 +119,11 @@ void on_axis_change(robot_event *ev) {
 	if(drive > 127) drive = 127;
 	if(drive < -127) drive = -127;
 	drive += 128;
-
 	new_ev.command = ROBOT_EVENT_MOTOR;
         new_ev.index = 0; new_ev.value = drive;
 		send_event(&new_ev);
 
-        new_ev.index = 1; new_ev.value = drive;
+        new_ev.index = 1; new_ev.value = 255 - drive;
 		send_event(&new_ev);
 
         new_ev.index = 6; new_ev.value = front;

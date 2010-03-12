@@ -47,6 +47,8 @@ void on_init() {
 
 	log_string(-1, "Robot is initializing");
 	send_event(&ev);
+	steer(0, 0);
+	steer(1, 0);
 }
 
 void on_shutdown() {
@@ -63,21 +65,18 @@ void on_shutdown() {
 
 int gripper = 0;
 void on_button_up(robot_event *ev) {
-	if(ev->index == CON_ARM_UP){
-		setPin(2,0,0);
-	}
-	if(ev->index == CON_ARM_DOWN){
-		setPin(2,1,0);
+	if(ev->index == CON_ARM_UP || ev->index == CON_ARM_DOWN){
+		setMotor(2,127);
 	}
 }
 
 void on_button_down(robot_event *ev) {	
 
 	if(ev->index == CON_ARM_UP){
-		setPin(2,0,1);
+		setMotor(2, 108);
 	}
 	if(ev->index == CON_ARM_DOWN){
-		setPin(2,1,1);
+		setMotor(2, 146);
 	}
 	if(ev->index == CON_GRIP){
 		gripper = 1-gripper;
