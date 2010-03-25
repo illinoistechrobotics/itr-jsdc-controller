@@ -80,7 +80,8 @@ void on_button_down(robot_event *ev) {
 	}
 	if(ev->index == CON_GRIP){
 		gripper = 1-gripper;
-		setPin(2,2,gripper);
+		setPin(2,0,gripper);
+		setPin(2,1,1-gripper);
 	}
 }
 
@@ -133,7 +134,7 @@ void on_command_code(robot_event *ev) {
 			break;
 		case ROBOT_EVENT_CMD_STOP:
 			setPin(6,3,1);
-			setPin(2,4,1);
+			setPin(1,4,1);
 
 			break;
 		case ROBOT_EVENT_CMD_REBOOT:
