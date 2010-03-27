@@ -40,10 +40,9 @@ signed short frame_angle;
 signed short error;
 signed long isum;
 
-void checkArm(void);
 void calculatePWM(void);
 
-void initGlobalVars(){
+void initSensors(){
 	global_vars[0] = 0;
 	global_vars[1] = 0;
 	global_vars[2] = 0;
@@ -57,6 +56,8 @@ void initGlobalVars(){
 	global_vars[10] = 0;
 	global_vars[11] = 0;
 	global_vars[12] = 0;
+	DDRC &= ~(1 << PORTC0);
+	PORTC |= (1 << PORTC0);
 }
 
 //Called every millisecond
@@ -64,7 +65,7 @@ void processData(){
 
 	checkArm();
 	
-	PORTB |= (1 ^ ((PINB && (1 << PINB4)) >> PINB4) << PINB4);
+	PORTB |= (PINB ^ (1 << 4));
 
 	if(global_vars[DRIVE_MODE] == DIRECT_ANGLE){
 		uint16_t x_gyro_amp;
@@ -95,8 +96,8 @@ void processData(){
 
 void checkArm(){
 	//If the limit switch is pressed and the arm is moving up stop the arm
-	if ((PINC & ( 1 << PINC0)) && OCR3C > 1500)
-		OCR3C = 1500;
+	if (!(PINC & ( 1 << PINC0)) && OCR3C > 1500)
+		OCR3C = 1340;
 }
 
 void calculatePWM(){

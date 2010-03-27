@@ -481,9 +481,9 @@ signed short readVariable(uint8_t var){
 	lock();
 	I2cReadBytes( i2cDev, 12, &d, 2);
 	unlock();
-	signed short data = d[1];
+	signed short data = (signed short)d[1];
 	data |= (signed short)d[2] << 8;
-	return d;
+	return data;
 }
 
 

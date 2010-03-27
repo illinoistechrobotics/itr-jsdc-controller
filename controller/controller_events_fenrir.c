@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "robot_comm.h"
 #include "robot_log.h"
 #include "joystick.h"
@@ -23,7 +24,6 @@
 #define MAX 126 //So 0=>1 and 255=>254
 #define M1POLARITY 1
 #define M2POLARITY -1
-#define TURNING_SCALE 4
 
 #define TARGET_ANGLE 		0x00
 #define TARGET_VELOCITY		0x01
@@ -39,13 +39,25 @@
 #define VELOCITY_RESET		0x0B
 #define DRIVE_MODE		0x0C
 
-#define KPROP_VALUE		8;
-#define KRATE_VALUE		2;
-#define KINT_VALUE		0;
+#define KPROP_VALUE		8
+#define KRATE_VALUE		2
+#define KINT_VALUE		0
+
+#define DRIVE_NORMAL		6
+#define DRIVE_TURBO		4
+#define DRIVE_SUPER		1
+
+#define TURN_NORMAL		8
+#define TURN_TURBO		6
+#define TURN_SUPER		1
 
 unsigned char ctrl_mode = CTRL_DIRECT_DRIVE;
 int xin = 0;
 int yin = 0;
+int drive_scale = DRIVE_NORMAL;
+int turn_scale = TURN_NORMAL;
+int turbo = 0;
+int superboost = 0;
 
 void on_init() {
 	robot_event ev;
@@ -85,11 +97,39 @@ void on_shutdown() {
 }
 
 void on_button_up(robot_event *ev) {
+	if(ev->index == 5){
+		turbo = 0;
+		drive_scale = DRIVE_NORMAL;
+		turn_scale = TURN_NORMAL;
+	} else if (ev->index == 7) {
+		superboost = 0;
+		if(turbo){
+			drive_scale = DRIVE_TURBO;
+			turn_scale = TURN_TURBO;
+		}
+	}
 	send_event(ev);
 }
 
 void on_button_down(robot_event *ev) {
-	send_event(ev);
+	if(ev->index == 5){
+		turbo = 1;
+		if(superboost){
+			drive_scale = DRIVE_SUPER;
+			turn_scale = TURN_SUPER;
+		} else {
+			drive_scale = DRIVE_TURBO;
+			turn_scale = TURN_TURBO;
+		}
+	} else if (ev->index == 7){
+		superboost = 1;
+		if(turbo){
+			drive_scale = DRIVE_SUPER;
+			turn_scale = TURN_SUPER;
+		}
+	} else {
+		send_event(ev);
+	}
 }
 
 void on_axis_change(robot_event *ev) {
@@ -110,12 +150,13 @@ void on_axis_change(robot_event *ev) {
 
 			if(axis == 3){
 				yin = (int)value - 127;
+				yin = ((float)yin / drive_scale);
 			} else {
 				xin = (int)value - 127;
 				if(abs(xin) < (int)((float) abs(yin) / 32.0) + 3){ // Deadband scaled from 6 at full y, 3 at center
 					xin = 0; 
 				} else {
-					xin = ((float)xin / TURNING_SCALE);
+					xin = ((float)xin / turn_scale);
 				}
 			}
 
@@ -147,12 +188,13 @@ void on_axis_change(robot_event *ev) {
 		if(axis == 3 || axis == 2){
 			if(axis == 3){
 				yin = (int)value - 127;
+				yin = ((float)yin / drive_scale);
 			} else if (axis == CON_XAXIS){
 				xin = (int)value - 127;
 				if(abs(xin) < (int)((float) abs(yin) / 32) + 3){ // Deadband scaled from 6 at full y, 3 at center
 					xin = 0; 
 				} else {
-					xin = ((float)xin / TURNING_SCALE);
+					xin = ((float)xin / turn_scale);
 				}
 			}
 
@@ -209,7 +251,7 @@ void on_status_code(robot_event *ev) {
 
 
 void on_adc_change(robot_event *ev){
-	log_string(0, "ADC %02X value %02X", ev->index, ev->value);
+	log_string(-1, "ADC %02X value %02X", ev->index, ev->value);
 }
 
 void on_read_variable(robot_event *ev){

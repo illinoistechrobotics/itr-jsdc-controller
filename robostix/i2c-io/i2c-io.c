@@ -174,15 +174,18 @@ int main(void)
     {
         tick_t prevTick;
 
-        switch ( count )
+        
+	switch ( count )
         {
-            case   0:   LED_ON();       break;
+           case   0:   LED_ON();       break;
             case  100:   LED_OFF();      break;
             case  200:   LED_ON();       break;
             case  300:   LED_OFF();      break;
             case 1000:   count = -1;     break;
         }
         count++;
+	
+	//processData();
 
         prevTick = gTickCount;
         while ( gTickCount == prevTick )

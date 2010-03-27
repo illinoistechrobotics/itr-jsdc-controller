@@ -102,7 +102,7 @@ void InitHardware( void )
     }
 
 #endif
-    initGlobalVars();
+    initSensors();
     InitTimer();
 
 } /* InitHardware */
