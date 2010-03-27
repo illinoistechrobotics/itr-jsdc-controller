@@ -1,3 +1,4 @@
+//    
 //    robot_events.c - User implementation of robot events
 //    Copyright (C) 2007 Illinois Institute of Technology Robotics
 //	  <robotics@iit.edu>
@@ -63,26 +64,32 @@ void on_shutdown() {
 int gripper = 0, suck = 0, drum = 0;
 void on_button_up(robot_event *ev) {
 	
-	if(ev->index == CON_ARM_UP){
-		setMotor(2,0);
+	if(ev->index == 0x04){
+		setMotor(2,127);
 	}
-	if(ev->index == CON_ARM_DOWN){
-		setMotor(2,0);
+	if(ev->index == 0x06){
+		setMotor(2,127);
 	}
 	
 }
 
 void on_button_down(robot_event *ev) {	
 	
-	if(ev->index == CON_ARM_UP){
-		setMotor(2,40);
+	if(ev->index == 0x04){
+		setMotor(2,180);
 	}
-	if(ev->index == CON_ARM_DOWN){
-		setMotor(2,-40);
+	if(ev->index == 0x06){
+		setMotor(2,1);
 	}
-	if(ev->index == CON_GRIP){
-		suck = 1-suck;
-		setMotor(3,254*suck);
+	if(ev->index == 0x01){
+		if(!suck){
+			setMotor(3,1);
+			suck = 1;
+		} else { 
+			setMotor(3,127);
+			suck = 0;
+		}
+
 	}
 	
 }

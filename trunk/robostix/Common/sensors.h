@@ -20,7 +20,7 @@
 #define SENSORS_H
 
 #include <inttypes.h>
-#include "Hardware.h"
+#include "../i2c-io/Hardware.h"
 #include "a2d.h"
 
 #define TARGET_ANGLE 		0x00
@@ -50,6 +50,7 @@ extern signed short global_vars [];
 extern signed short frame_angle;
 extern signed short error;
 extern signed long isum;
-extern void initGlobalVars(void);
+extern void initSensors(void);
+extern void checkArm(void);
 extern void processData(void);
 #endif // !SENSORS_H

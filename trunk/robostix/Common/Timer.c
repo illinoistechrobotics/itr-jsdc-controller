@@ -37,6 +37,8 @@
 
 #include "Config.h"
 #include "Timer.h"
+#include "../i2c-BootLoader/Config-LED.h"
+#include "sensors.h"
 
 #include <avr/interrupt.h>
 #include <avr/io.h>
@@ -64,8 +66,17 @@ volatile msTick_t   gMsTickCount = 0;
 #   define  CFG_TIMER_MICRO_TICK    1
 #endif
 
+signed short count = 0;
+
 // ---- Private Constants and Types -----------------------------------------
 // ---- Private Function Prototypes -----------------------------------------
+#undef  LED_ON
+#undef  LED_OFF
+
+#define LED_OFF()   do { CFG_BOOTLOADER_BEAT_PORT &= ~CFG_BOOTLOADER_BEAT_MASK; } while (0)
+#define LED_ON()    do { CFG_BOOTLOADER_BEAT_PORT |=  CFG_BOOTLOADER_BEAT_MASK; } while (0)
+
+
 // ---- Functions -----------------------------------------------------------
 
 /***************************************************************************/
@@ -107,6 +118,16 @@ SIGNAL(SIG_OVERFLOW0)        /* signal handler for tcnt0 overflow interrupt */
 #define OVERFLOW_COUNT  ( CFG_CPU_CLOCK / 1000 / 64 )
 
     TCNT0 = (uint8_t) -OVERFLOW_COUNT;
+
+
+	switch ( count )
+        {
+           case   0:   LED_ON();       break;
+            case  100:   LED_OFF();      break;
+            case  200:   LED_ON();       break;
+            case  300:   LED_OFF();      break;
+            case 1000:   count = -1;     break;
+        }
 
 #if defined( CFG_TIMER0_MS_TICK )
     CFG_TIMER0_MS_TICK;
