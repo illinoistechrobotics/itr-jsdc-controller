@@ -107,6 +107,9 @@ void on_button_up(robot_event *ev) {
 			drive_scale = DRIVE_TURBO;
 			turn_scale = TURN_TURBO;
 		}
+	} else if (ev->index == 4) {
+		drive_scale = DRIVE_NORMAL;
+		turn_scale = TURN_NORMAL;
 	}
 	send_event(ev);
 }
@@ -127,6 +130,9 @@ void on_button_down(robot_event *ev) {
 			drive_scale = DRIVE_SUPER;
 			turn_scale = TURN_SUPER;
 		}
+	} else if (ev->index == 4) {
+		drive_scale = DRIVE_SUPER;
+		turn_scale = TURN_NORMAL;
 	} else {
 		send_event(ev);
 	}
