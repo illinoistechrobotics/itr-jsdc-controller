@@ -4,6 +4,7 @@
 int		  CON_XAXIS,
 		  CON_YAXIS,
 		  CON_RAXIS,
+		  CON_ZAXIS,
 		  CON_TURBO1,
 		  CON_TURBO2,
 		  CON_ARM_UP,
@@ -19,6 +20,7 @@ void setProfile(char data){
 			CON_XAXIS 		= 0x00;
 			CON_YAXIS 		= 0x01;
 			CON_RAXIS 		= 0x03;
+			CON_ZAXIS		= 0x02;
 			CON_TURBO1 		= 0x07;
 			CON_TURBO2 		= 0x08;
 			CON_ARM_UP 		= 0x09;
@@ -33,6 +35,7 @@ void setProfile(char data){
 			CON_XAXIS 		= 0x00;
 			CON_YAXIS 		= 0x01;
 			CON_RAXIS 		= 0x02;
+			CON_ZAXIS		= 0x03;
 			CON_TURBO1 		= 0x05;
 			CON_TURBO2 		= 0x07;
 			CON_ARM_UP 		= 0x04;

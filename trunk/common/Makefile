@@ -1,9 +1,9 @@
 # use sdl libraries and lib math
-LIBS += -lSDL -lpthread
+LIBS += -lSDL -pthread `sdl-config --libs`
 INCLUDES += -I.
 OPTS += -Wall -g
 CC ?= gcc
-CFLAGS += $(INCLUDES) $(OPTS)
+CFLAGS += $(INCLUDES) $(OPTS) `sdl-config --cflags`
 
 BINARY = robot_queue_test
 COMMON_OBJ = robot_queue.o \

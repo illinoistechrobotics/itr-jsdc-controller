@@ -37,7 +37,6 @@
 #include "mod_i2c-io.h"
 #include "profile.h"
 
-int flasher = 0;
 
 void on_init() {
 	robot_event ev;
@@ -65,23 +64,25 @@ void on_shutdown() {
 
 int gripper = 0;
 void on_button_up(robot_event *ev) {
-	if(ev->index == CON_ARM_UP || ev->index == CON_ARM_DOWN){
-		setMotor(2,127);
+	if(ev->index == CON_ARM_UP){
+        setPin(2,1,0);
+	}
+	if(ev->index == CON_ARM_DOWN){
+        setPin(2,2,0);
 	}
 }
 
 void on_button_down(robot_event *ev) {	
 
 	if(ev->index == CON_ARM_UP){
-		setMotor(2, 108);
+        setPin(2,1,1);
 	}
 	if(ev->index == CON_ARM_DOWN){
-		setMotor(2, 146);
+        setPin(2,2,1);
 	}
 	if(ev->index == CON_GRIP){
 		gripper = 1-gripper;
 		setPin(2,0,gripper);
-		setPin(2,1,1-gripper);
 	}
 }
 
@@ -120,6 +121,7 @@ void on_10hz_timer(robot_event *ev){
 }
 
 void on_command_code(robot_event *ev) {
+    static int flasher = 0;
 	robot_event send_ev;
 	switch(ev->command) {
 		case ROBOT_EVENT_CMD_NOOP:

@@ -3,6 +3,7 @@ extern void setProfile(char data);
 extern int CON_XAXIS,
 			  CON_YAXIS,
 			  CON_RAXIS,
+              CON_ZAXIS,
 			  CON_TURBO1,
 			  CON_TURBO2,
 			  CON_ARM_UP,
