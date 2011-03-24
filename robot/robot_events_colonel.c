@@ -38,6 +38,7 @@
 #include "profile.h"
 
 
+
 void on_init() {
 	robot_event ev;
 	ev.command = ROBOT_EVENT_CMD_START;
@@ -62,12 +63,9 @@ void on_shutdown() {
 	send_event(&ev);
 }
 
-int gripper = 0;
+int gripper = 0, hold = 0, shoot = 0;
 void on_button_up(robot_event *ev) {
-	if(ev->index == CON_ARM_UP){
-        setPin(2,1,0);
-	}
-	if(ev->index == CON_ARM_DOWN){
+	if(ev->index == CON_ARM_UP || ev->index == CON_ARM_DOWN){
         setPin(2,2,0);
 	}
 }
@@ -75,14 +73,26 @@ void on_button_up(robot_event *ev) {
 void on_button_down(robot_event *ev) {	
 
 	if(ev->index == CON_ARM_UP){
-        setPin(2,1,1);
+        setPin(2,2,1);
+        setPin(2,3,1);
 	}
 	if(ev->index == CON_ARM_DOWN){
         setPin(2,2,1);
+        setPin(2,3,0);
 	}
 	if(ev->index == CON_GRIP){
 		gripper = 1-gripper;
 		setPin(2,0,gripper);
+	}
+    if(ev->index == CON_FRONT && gripper == 0){
+        hold = 1 - hold;
+        setPin(2,1,hold);
+    }
+	if(ev->index == 0x00){
+		shoot = 1-shoot;
+		setPin(2,4,shoot);
+		setPin(2,5,shoot);
+		setPin(2,6,shoot);
 	}
 }
 
