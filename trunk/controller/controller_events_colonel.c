@@ -46,9 +46,18 @@ void on_button_up(robot_event *ev) {
 	send_event(ev);
 }
 
+int shoot = 0;
 void on_button_down(robot_event *ev) {
 	if(ev->index == CON_TURBO1 || ev->index == CON_TURBO2)
 		turbo++;
+
+    if(ev->index == 0x00){
+        shoot = 1 - shoot;
+	    robot_event new_ev;
+	    new_ev.command = ROBOT_EVENT_MOTOR;
+        new_ev.index = 4; new_ev.value = (shoot ? 255 : 127);
+		send_event(&new_ev);
+    }
 	send_event(ev);
 }
 
@@ -78,6 +87,7 @@ void on_axis_change(robot_event *ev) {
         xNew = (int)xAxis - 128;
         yNew = (int)yAxis - 128;
         rNew = (int)rAxis - 128;
+        rNew = (turbo == 0 ? rNew : rNew >> 1);
 
 	    if(xNew < 0)
 	    	strafe = (int)(((double)250*(double)atan((double)yNew/(double)xNew)/((double).5*(double)PI))-250); //Left side.
@@ -119,12 +129,20 @@ void on_axis_change(robot_event *ev) {
         if(rearswap == 1)
             rear = (rear > 500 ? rear - 500 : rear + 500);
     }
+        int frontdrive = (frontswap == 0 ? throttle : 255 - throttle);
+        int reardrive = (rearswap == 0 ? 255 - throttle : throttle);
 	new_ev.command = ROBOT_EVENT_MOTOR;
         
-        new_ev.index = 0; new_ev.value = (frontswap == 0 ? throttle : 255 - throttle);
+        new_ev.index = 0; new_ev.value = frontdrive;
 		send_event(&new_ev);
 
-        new_ev.index = 1; new_ev.value = (rearswap == 0? 255 - throttle : throttle);
+        new_ev.index = 1; new_ev.value = (((frontdrive-127)*turbo)/2)+127;
+		send_event(&new_ev);
+
+        new_ev.index = 2; new_ev.value = reardrive;
+		send_event(&new_ev);
+        
+        new_ev.index = 3; new_ev.value = (((reardrive-127)*turbo)/2)+127;
 		send_event(&new_ev);
         
         lastfront = front;
